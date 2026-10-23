@@ -1,0 +1,237 @@
+{
+ "seed": 0,
+ "n": 2000,
+ "n_gst": 200,
+ "results": {
+  "gbstats.seq.rel": {
+   "binary": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 270,
+    "engine_no_results": 292,
+    "ok": true
+   },
+   "continuous": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 165,
+    "engine_no_results": 206,
+    "ok": true
+   },
+   "ratio": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 256,
+    "engine_no_results": 194,
+    "ok": true
+   }
+  },
+  "gbstats.seq.rel.tuned": {
+   "binary": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 269,
+    "engine_no_results": 292,
+    "ok": true
+   },
+   "continuous": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 166,
+    "engine_no_results": 206,
+    "ok": true
+   },
+   "ratio": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 255,
+    "engine_no_results": 194,
+    "ok": true
+   }
+  },
+  "gbstats.seq.abs": {
+   "binary": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 257,
+    "engine_no_results": 292,
+    "ok": true
+   },
+   "continuous": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 164,
+    "engine_no_results": 206,
+    "ok": true
+   },
+   "ratio": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 256,
+    "engine_no_results": 194,
+    "ok": true
+   }
+  },
+  "gbstats.ttest.rel": {
+   "binary": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 285,
+    "engine_no_results": 292,
+    "ok": true
+   },
+   "continuous": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 206,
+    "engine_no_results": 206,
+    "ok": true
+   },
+   "ratio": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 288,
+    "engine_no_results": 194,
+    "ok": true
+   }
+  },
+  "gbstats.bayes.ctw95": {
+   "binary": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 297,
+    "engine_no_results": 292,
+    "ok": true
+   },
+   "continuous": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 224,
+    "engine_no_results": 206,
+    "ok": true
+   },
+   "ratio": {
+    "cells": 666,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 302,
+    "engine_no_results": 194,
+    "ok": true
+   }
+  },
+  "spotify.z": {
+   "binary": {
+    "cells": 1000,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 742,
+    "engine_no_results": 114,
+    "ok": true
+   },
+   "continuous": {
+    "cells": 1000,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 1.749526493640605e-15,
+    "engine_rejections": 389,
+    "engine_no_results": 102,
+    "ok": true
+   }
+  },
+  "spotify.gst": {
+   "paths": {
+    "cells": 691,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 128,
+    "engine_no_results": 0,
+    "ok": true
+   }
+  }
+ }
+}

@@ -75,6 +75,11 @@ def _moments(stats: LookStats, cumulative: bool) -> dict[str, np.ndarray]:
             v = np.where(binary, q / n - pe**2, (q - np.power(s, 2) / n) / (n - 1))
             bad |= v < 0
             out[f"pe_{arm}"], out[f"v_{arm}"] = pe, v
+        # The engine's powered-effect search (run on every call) raises IndexError when the
+        # control row looks binary (sum == sum_squares, i.e. one unit with value 0) while
+        # the call is not binary, so the control variance is 0/0 = NaN. Reproduced as
+        # "no result"; see scripts/spotify_indexerror_repro.py.
+        bad |= (na == 1) & (stats.sum_a == 0) & (stats.sumsq_a == 0) & ~binary
         if cumulative:
             bad = np.logical_or.accumulate(bad, axis=1)  # a refused row fails later calls
         se = np.sqrt(out["v_a"] / na + out["v_b"] / nb)
@@ -178,7 +183,7 @@ class SpotifyGST(_SpotifyMethod):
             for looks, targets in calls:
                 try:
                     res = _difference(_frame(stats, i, looks, ctx.n_max), sequential=True)
-                except ValueError:
+                except (ValueError, IndexError):
                     continue  # engine refuses the input: recorded as "no result"
                 for j in targets:
                     row = res.iloc[j]
@@ -216,7 +221,7 @@ class SpotifyZ(_SpotifyMethod):
             for looks in groups:
                 try:
                     res = _difference(_frame(stats, i, looks, None), sequential=False)
-                except ValueError:
+                except (ValueError, IndexError):
                     if per_look or k == 1:
                         continue
                     # One bad row fails the whole call; fall back to single-look calls.

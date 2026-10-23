@@ -504,7 +504,7 @@ def report(run_dir: str | Path, publish: str | Path | None = None) -> dict[str, 
         ],
         "cells": rows,
     }
-    (dest / "summary.json").write_text(json.dumps(summary, indent=1, default=float),
+    (dest / "summary.json").write_text(json.dumps(summary, separators=(",", ":"), default=float),
                                        encoding="utf-8")  # fmt: skip
     write_report(manifest, rows, gate_list, units, dest / "REPORT.md", figures)
     if publish:

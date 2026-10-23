@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "peekaudit"
-version = "0.0.1"
+version = "0.1.0"
 description = "Simulation audit of the sequential-testing guarantees of open-source A/B testing engines: false-positive rate under peeking, coverage at the stopping time, power and expected sample size."
 readme = "README.md"
 license = "MIT"

@@ -119,9 +119,16 @@ estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_stu
 - **Done (M7):** `conformance.py`, `peekaudit conform`, smoke battery in CI.
 - **Dropped:** `gbstats.seq.rel.guard150` (DESIGN 4.3): the compared quantity could not be
   confirmed from source.
-- **M6 in progress:** quick study `scripts/run_study.py --config quick --out runs/quick`
-  started 2026-10-23 18:58 UTC. The machine was fully loaded by other jobs, so units take
-  ~2.5x the pilot time (ETA ~55 min). Resume by rerunning the same command; then
-  `uv run peekaudit report runs/quick --publish docs/results/quick`, write REPORT.md and
-  README findings (M8), bump the version to 0.1.0 *after* the run (the unit checkpoints
-  record the package version and resume matches on it).
+- **Done (M6):** quick study at git `fa12471`, config hash `82e303ecf6547d58`: 52/52 units,
+  0 failed, 0 unverified, 50.3 min wall / 200.6 CPU-min on 4 workers (machine loaded by
+  other jobs). All 40 gates pass. Published to `docs/results/quick/`. A single-process
+  rerun of one unit is byte-identical. `docs/results/verify.json`: 0 mismatches.
+- **Done (M8):** README, CHANGELOG 0.1.0, version 0.1.0 (no tag). The report loader matches
+  unit checkpoints on config hash only, so the version bump does not invalidate `runs/quick`.
+  The spotify mirror's single-unit-control `IndexError` branch was added after the run; it
+  cannot occur in the study grid (control arms start at 3 units).
+- **Not done / next:** a hand-written root `REPORT.md` (the generated
+  `docs/results/quick/REPORT.md` is the current report); the full config
+  (20,000 / 10,000 replicates, ~80 min idle); copying the gbstats sdist and spotify repo
+  fixtures (needs a download); a guarded gbstats variant once the product's minimum-sample
+  rule is confirmed from source; tagging and publishing.

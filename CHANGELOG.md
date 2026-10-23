@@ -35,7 +35,17 @@ study runner, report and conformance check, plus the results of the quick study.
 - `peekaudit.conformance` and `peekaudit conform`: `check_conformance` and
   `assert_conforms` for any method, with smoke, quick and standard batteries; the smoke
   battery runs in CI.
-- `docs/results/quick/` and `REPORT.md`: results of the quick study.
+- `docs/results/quick/`: report, figures and `summary.json` of the quick study (52 units,
+  4,000 / 2,000 replicates, all 40 sanity gates pass); `docs/results/verify.json`: the
+  randomised mirror-versus-engine grid (0 mismatches).
+- `scripts/zero_count_example.py` and `scripts/spotify_indexerror_repro.py`: standalone
+  engine illustrations (z-test over-rejection with a zero-conversion arm; a
+  spotify-confidence 4.1.0 `IndexError` for a single-unit control group with value 0).
+
+### Changed
+
+- README rewritten with install, quick start, validation steps, results and citation.
+- Version 0.1.0 in `pyproject.toml`, `peekaudit.__version__` and `CITATION.cff`.
 
 - Project scaffold: uv + hatchling, `src/` layout, CI (pull requests and manual dispatch),
   repository hygiene files.

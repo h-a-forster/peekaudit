@@ -142,3 +142,18 @@ def test_edge_cases() -> None:
     out = m.evaluate(st, _ctx(100, 1))
     assert out.reject[0, 0] == 0 and not out.no_result[0, 0]
     assert not m.supports(METRICS["ratio"])
+
+
+def test_engine_indexerror_branch_is_mirrored_as_no_result() -> None:
+    """spotify-confidence 4.1.0 raises IndexError for one control unit with value 0 and a
+    non-binary treatment (scripts/spotify_indexerror_repro.py); both sides give no result."""
+    m = get_method("spotify.z")
+    st = LookStats(
+        np.array([1, 1, 50]), np.array([[0.0, 1.0, 0.0]]), np.array([[0.0, 1.0, 0.0]]),
+        np.array([50, 50, 50]), np.array([[120.0] * 3]), np.array([[900.0] * 3]),
+    )  # fmt: skip
+    ctx = _ctx(1000, 3)
+    mir = m.evaluate(st, ctx)
+    eng = m.evaluate_engine(st, ctx, per_look=True)  # type: ignore[call-arg]
+    assert mir.no_result[0].tolist() == [True, False, False]
+    assert compare(mir, eng).ok
