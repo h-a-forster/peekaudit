@@ -539,7 +539,12 @@ Cut or deferred, with reasons:
 - **Identity gates (5.3):** the Bayes-vs-z and ACS-vs-gbstats-absolute identities compare
   code paths that share arithmetic (the variance helper; `acs_pvalue_halfwidth`). They are
   reported as mirror self-consistency checks. Engine correctness rests on the in-loop and
-  randomised-grid comparisons with the real engines.
+  randomised-grid comparisons with the real engines. Added after v0.1:
+  `verify.engine_identities` (run by `peekaudit verify`) checks both identities against the
+  real engines on random inputs: gbstats Bayes against a z-test written from the textbook
+  delta-method formulas, and the gbstats absolute sequential engine against `ref.acs`. Both
+  apply gbstats' refusal rules (an arm variance <= 0, or a zero control mean, gives no
+  result on either scale).
 - **Report content (6.4):** the generated report carries the detection limit, the findings
   list with Holm-adjusted p-values (split into sequential, single-look and coverage
   findings), the limitations and this deviations list.

@@ -170,9 +170,14 @@ report lists every git SHA found.
   gbstats PyPI vs main (re-check before filing). Standalone repros in `scripts/`, tested in
   `tests/test_scripts.py`. spotify GST small-arm excess deliberately not drafted (the
   reference GST behaves the same).
+- **Done (engine-backed identities):** `verify.engine_identities`, run by `peekaudit verify`
+  (or `--method identities`): real gbstats Bayes vs an independent textbook z at level 0.10,
+  and the real gbstats absolute sequential engine vs `ref.acs`; 0 mismatches on 2,000 random
+  inputs each (decisions, no-result flags, intervals). Finding while building it: gbstats
+  refuses (no result) when either arm's variance is <= 0 or the control mean is 0, on both
+  scales. `docs/results/verify.json` regenerated (9.6 min; all 0 mismatches).
 - **Not done / next:** copying the gbstats sdist
   and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
   product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
-  interim answer); an engine-backed identity check (the two identity gates share arithmetic
-  with the mirrors); variance reduction (CUPED) stretch; tagging and publishing (README
+  interim answer); variance reduction (CUPED) stretch; tagging and publishing (README
   install points at the repository without a tag until then).

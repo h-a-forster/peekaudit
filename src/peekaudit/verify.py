@@ -7,6 +7,7 @@ must agree, and intervals must agree to rtol 1e-9 / atol 1e-12.
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -227,4 +228,98 @@ def grid_agreement(method: Method, n: int = 2000, seed: int = 0) -> dict[str, Ag
         else:
             engine = method.evaluate_engine(st, ctx)
         results[kind] = compare(mirror, engine)
+    return results
+
+
+def _arm_moments(stats: LookStats) -> tuple[np.ndarray, ...]:
+    """Means and variances per arm from the textbook formulas (single-replicate input):
+    p(1 - p) for binary data, the n - 1 sample variance otherwise (0 when n <= 1)."""
+    n_a, n_b = stats.n_a.astype(float), stats.n_b.astype(float)
+    s_a, s_b = stats.sum_a[0], stats.sum_b[0]
+    q_a, q_b = stats.sumsq_a[0], stats.sumsq_b[0]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        m_a = np.where(n_a > 0, s_a / n_a, 0.0)
+        m_b = np.where(n_b > 0, s_b / n_b, 0.0)
+        if stats.binary:
+            v_a, v_b = m_a * (1 - m_a), m_b * (1 - m_b)
+        else:
+            v_a = np.where(n_a > 1, (q_a - s_a * s_a / n_a) / (n_a - 1), 0.0)
+            v_b = np.where(n_b > 1, (q_b - s_b * s_b / n_b) / (n_b - 1), 0.0)
+    return n_a, n_b, m_a, m_b, v_a, v_b
+
+
+def _independent_relative_z(stats: LookStats) -> tuple[np.ndarray, np.ndarray]:
+    """Relative effect z-statistic written from the textbook formulas, independently of the
+    adapters' variance helper: delta-method variance of (m_b - m_a) / m_a. Returns
+    (z, valid). ``valid`` encodes gbstats' documented refusal rules: no result when an arm's
+    variance is not positive (``ZERO_NEGATIVE_VARIANCE``) or the control mean is 0."""
+    n_a, n_b, m_a, m_b, v_a, v_b = _arm_moments(stats)
+    with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+        var = v_b / (m_a**2 * n_b) + v_a * m_b**2 / (m_a**4 * n_a)
+        valid = (m_a != 0) & (v_a > 0) & (v_b > 0) & np.isfinite(var) & (var > 0)
+        z = np.where(valid, ((m_b - m_a) / m_a) / np.sqrt(np.where(valid, var, 1.0)), 0.0)
+    return z, valid
+
+
+def engine_identities(n: int = 2000, seed: int = 0) -> dict[str, Agreement]:
+    """Engine-backed versions of the two identity gates (DESIGN 5.3).
+
+    The in-run identity gates compare code paths that share arithmetic with the mirrors.
+    Here the *real engines* are compared with independent computations on random inputs:
+
+    - ``bayes_vs_z10``: gbstats ``EffectBayesianABTest`` (improper prior, chance to win
+      >= 95% or <= 5%) against a two-sided level-0.10 z-test on the relative effect computed
+      by :func:`_independent_relative_z` (binary and continuous inputs).
+    - ``acs_vs_gbstats_abs``: gbstats ``SequentialTwoSidedTTest`` (absolute, tuning N*)
+      against the reference ``ref.acs`` with N_max = N* (continuous inputs; decisions and
+      intervals), with gbstats' refusal rules applied to the reference.
+
+    Decisions are compared where the engine returns a result; a decision within 1e-9
+    relative of its threshold is a tie (counted, not failed). ``no_result_mismatches``
+    counts inputs where the engine and the independent computation disagree on whether a
+    result exists.
+    """
+    from scipy.stats import norm
+
+    from peekaudit.methods.gbstats_adapter import GbstatsBayes, GbstatsSequential
+    from peekaudit.methods.reference import ACS
+
+    z10 = float(norm.ppf(0.95))
+    results: dict[str, Agreement] = {}
+    bayes = GbstatsBayes()
+    total = Agreement()
+    per = max(1, n // 2)
+    for i, kind in enumerate(("binary", "continuous")):
+        st = random_grid(kind, per, seed + i)
+        ctx = EvalContext(METRICS["normal"], 10_000, "custom", np.arange(per), 0.1)
+        eng = bayes.evaluate_engine(st, ctx)
+        z, valid = _independent_relative_z(st)
+        has = ~eng.no_result[0]
+        expected = np.where(valid & (np.abs(z) >= z10), np.sign(z), 0)
+        tie = np.abs(np.abs(z) - z10) < TIE_TOL * z10
+        both = has & valid
+        total = total.add(
+            Agreement(
+                cells=per,
+                decision_mismatches=int(np.sum(both & ~tie & (eng.reject[0] != expected))),
+                ties=int(np.sum(both & tie)),
+                tie_mismatches=int(np.sum(both & tie & (eng.reject[0] != expected))),
+                no_result_mismatches=int(np.sum(has != valid)),
+                engine_rejections=int(np.sum(eng.reject[0] != 0)),
+                engine_no_results=int(np.sum(~has)),
+            )
+        )
+    results["bayes_vs_z10"] = total
+
+    st = random_grid("continuous", n, seed + 7)
+    ctx = EvalContext(METRICS["normal"], 10_000, "custom", np.arange(n), 0.1)
+    eng = GbstatsSequential(relative=False, tuned=True).evaluate_engine(st, ctx)
+    ref = ACS().evaluate(st, ctx)
+    # The reference has no per-arm refusal rules; apply gbstats' on both scales: an arm
+    # variance <= 0 (ZERO_NEGATIVE_VARIANCE) or a zero control mean
+    # (ZERO_NEGATIVE_BASELINE_VARIATION).
+    _, _, m_a, _, v_a, v_b = _arm_moments(st)
+    refuse = ref.no_result | ((v_a <= 0) | (v_b <= 0) | (m_a == 0))[None, :]
+    ref = dataclasses.replace(ref, no_result=refuse, reject=np.where(refuse, 0, ref.reject))
+    results["acs_vs_gbstats_abs"] = compare(ref, eng)
     return results

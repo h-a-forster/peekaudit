@@ -232,6 +232,32 @@
     "engine_no_results": 0,
     "ok": true
    }
+  },
+  "engine_identities": {
+   "bayes_vs_z10": {
+    "cells": 2000,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 754,
+    "engine_no_results": 802,
+    "ok": true
+   },
+   "acs_vs_gbstats_abs": {
+    "cells": 2000,
+    "decision_mismatches": 0,
+    "ties": 0,
+    "tie_mismatches": 0,
+    "no_result_mismatches": 0,
+    "interval_mismatches": 0,
+    "max_interval_rel_diff": 0.0,
+    "engine_rejections": 490,
+    "engine_no_results": 615,
+    "ok": true
+   }
   }
  }
 }

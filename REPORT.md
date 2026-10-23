@@ -135,7 +135,9 @@ The claim covers schedules within the planned sample size (`fixed1`, `daily14`, 
 - All 40 sanity gates pass: positive controls against exact crossing probabilities,
   negative controls, fixed-horizon and power calibration, in-loop engine agreement and two
   mirror self-consistency checks (code paths that share arithmetic, so not independent
-  evidence of engine correctness).
+  evidence of engine correctness). Their engine-backed versions (`peekaudit verify`, real
+  gbstats engines against independent formulas and the reference ACS on 2,000 random inputs
+  each) also agree exactly: 0 decision, no-result or interval mismatches.
 
 ### Engine mirror verification
 
@@ -207,7 +209,8 @@ GST shows the same pattern, so they are not engine defects.
 - 140 looks understate truly continuous monitoring; more looks can only add rejections.
 - Excesses below about 5.5% FPR (or coverage above about 94.5%) can go undetected.
 - Engine rates come from mirrors verified on a subsample of replicates and on randomised
-  grids; the two identity gates are self-consistency checks only.
+  grids; the two in-run identity gates are self-consistency checks, backed by engine-level
+  versions on random inputs (not on the study data).
 - The engine fixtures from the gbstats sdist and the spotify repository are not reproduced
   (only the scaffold's gbstats fixture is); see DESIGN section 13.
 

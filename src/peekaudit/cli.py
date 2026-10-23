@@ -81,18 +81,22 @@ def _cmd_status(args: argparse.Namespace) -> int:
 
 def _cmd_verify(args: argparse.Namespace) -> int:
     from peekaudit.methods.registry import get_method
-    from peekaudit.verify import grid_agreement
+    from peekaudit.verify import Agreement, engine_identities, grid_agreement
 
-    names = [args.method] if args.method else [
-        "gbstats.seq.rel", "gbstats.seq.rel.tuned", "gbstats.seq.abs", "gbstats.ttest.rel",
-        "gbstats.bayes.ctw95", "spotify.z", "spotify.gst",
-    ]  # fmt: skip
+    if args.method == "identities":
+        names: list[str] = []
+    elif args.method:
+        names = [args.method]
+    else:
+        names = [
+            "gbstats.seq.rel", "gbstats.seq.rel.tuned", "gbstats.seq.abs", "gbstats.ttest.rel",
+            "gbstats.bayes.ctw95", "spotify.z", "spotify.gst",
+        ]  # fmt: skip
     report: dict[str, dict[str, object]] = {}
     ok = True
-    for name in names:
-        method = get_method(name)
-        n = args.n_gst if name == "spotify.gst" else args.n
-        res = grid_agreement(method, n=n, seed=args.seed)
+
+    def show(name: str, res: dict[str, Agreement]) -> None:
+        nonlocal ok
         report[name] = {kind: agr.to_dict() for kind, agr in res.items()}
         for kind, agr in res.items():
             ok &= agr.ok
@@ -102,6 +106,12 @@ def _cmd_verify(args: argparse.Namespace) -> int:
                 f"{agr.no_result_mismatches} interval_mismatches={agr.interval_mismatches} "
                 f"max_rel_diff={agr.max_interval_rel_diff:.1e} {'OK' if agr.ok else 'FAIL'}"
             )
+
+    for name in names:
+        n = args.n_gst if name == "spotify.gst" else args.n
+        show(name, grid_agreement(get_method(name), n=n, seed=args.seed))
+    if args.method in (None, "identities"):
+        show("engine_identities", engine_identities(n=args.n, seed=args.seed))
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
             json.dump({"seed": args.seed, "n": args.n, "n_gst": args.n_gst, "results": report},
@@ -182,7 +192,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_status.set_defaults(func=_cmd_status)
 
     p_verify = sub.add_parser("verify", help="mirror vs engine on random inputs")
-    p_verify.add_argument("--method", help="one engine method (default: all)")
+    p_verify.add_argument(
+        "--method", help="one engine method, or 'identities' (default: all, plus identities)"
+    )
     p_verify.add_argument("--n", type=int, default=2000, help="single-look inputs per method")
     p_verify.add_argument("--n-gst", type=int, default=200, help="random paths for spotify.gst")
     p_verify.add_argument("--seed", type=int, default=0)
