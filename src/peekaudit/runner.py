@@ -2,15 +2,21 @@
 
 Layout of ``runs/<study>/`` (DESIGN 7):
 
-- ``manifest.json``: config, config hash, versions, git SHA, start time.
+- ``manifest.json``: config, config hash and the provenance of the first start, plus a
+  ``starts`` list with the time, git SHA and versions of every start or resume.
 - ``units/<unit_id>.json``: aggregates for every (method, schedule) cell, engine
   verification counts and identity checks. Written atomically (temp file + ``os.replace``).
   The content depends only on the config and the code, never on timing or worker count.
-- ``units/<unit_id>.timing.json``: wall time of the unit (kept out of the unit JSON).
+- ``units/<unit_id>.timing.json``: wall time and provenance (git SHA, versions) of the run
+  that computed the unit. Kept out of the unit JSON so that it stays byte-identical.
 - ``cache/<unit_id>.npz``: per-replicate stopping look, sign and interval at the stop.
 - ``progress.log``: one line per finished unit with done/total, elapsed, rate and ETA.
 
-A unit is skipped when its JSON exists with the same config hash and peekaudit version.
+Completeness has one rule, :func:`unit_complete`, used by ``run``, ``status`` and
+``report``: a unit is complete when its JSON exists with the study's config hash. The
+config hash does not cover the code, so a resume after a code change mixes code versions;
+``run`` and ``status`` warn when that happens and the report lists every git SHA and
+version set it finds. Use ``--force`` to recompute.
 """
 
 from __future__ import annotations
@@ -23,7 +29,7 @@ import subprocess
 import time
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from dataclasses import asdict, dataclass, field
+from dataclasses import MISSING, asdict, dataclass, field, fields
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -65,6 +71,38 @@ class StudyConfig:
     schedules: tuple[str, ...] = tuple(SCHEDULES)
     units: tuple[str, ...] = ()  # empty = the full study grid
 
+    def __post_init__(self) -> None:
+        self.validate()
+
+    def validate(self) -> None:
+        """Raise ValueError on a config that cannot run (checked before anything is written)."""
+        errors = []
+        for key in ("r_aa", "r_ab", "chunk"):
+            v = getattr(self, key)
+            if not isinstance(v, int) or isinstance(v, bool) or v < 1:
+                errors.append(f"{key} must be an integer >= 1 (got {v!r})")
+        for key in ("k_verify", "k_verify_slow", "master_seed"):
+            v = getattr(self, key)
+            if not isinstance(v, int) or isinstance(v, bool) or v < 0:
+                errors.append(f"{key} must be an integer >= 0 (got {v!r})")
+        if not self.methods:
+            errors.append("methods must not be empty")
+        bad_m = [m for m in self.methods if m not in METHOD_NAMES and ":" not in m]
+        if bad_m:
+            errors.append(f"unknown methods {bad_m}; known: {', '.join(METHOD_NAMES)}")
+        if not self.schedules:
+            errors.append("schedules must not be empty")
+        bad_s = [s for s in self.schedules if s not in SCHEDULES]
+        if bad_s:
+            errors.append(f"unknown schedules {bad_s}; known: {', '.join(SCHEDULES)}")
+        for u in self.units:
+            try:
+                unit_from_id(u)
+            except (ValueError, IndexError):
+                errors.append(f"not a unit id: {u!r}")
+        if errors:
+            raise ValueError(f"invalid study config {self.name!r}: " + "; ".join(errors))
+
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["methods"] = list(self.methods)
@@ -82,8 +120,18 @@ class StudyConfig:
     @staticmethod
     def from_dict(d: dict[str, Any]) -> StudyConfig:
         d = dict(d)
+        names = [f.name for f in fields(StudyConfig)]
+        unknown = sorted(set(d) - set(names))
+        if unknown:
+            raise ValueError(f"invalid study config: unknown keys {unknown}")
+        required = [f.name for f in fields(StudyConfig) if f.default is MISSING]
+        missing = [k for k in required if k not in d]
+        if missing:
+            raise ValueError(f"invalid study config: missing keys {missing}")
         for key in ("methods", "schedules", "units"):
             if key in d:
+                if isinstance(d[key], str):
+                    raise ValueError(f"invalid study config: {key} must be a list")
                 d[key] = tuple(d[key])
         return StudyConfig(**d)
 
@@ -267,18 +315,50 @@ def unit_path(out: Path, unit_id: str) -> Path:
     return out / "units" / f"{unit_id}.json"
 
 
-def is_done(out: Path, unit: Unit, cfg: StudyConfig) -> bool:
-    p = unit_path(out, unit.id)
+def timing_path(out: Path, unit_id: str) -> Path:
+    return out / "units" / f"{unit_id}.timing.json"
+
+
+def unit_complete(d: dict[str, Any] | None, cfg: StudyConfig) -> bool:
+    """The single completeness rule (run, status and report): same config hash.
+
+    The package version and git SHA are provenance, recorded per unit in the timing sidecar
+    and reported, not matched (a version bump alone must not force a recompute).
+    """
+    return d is not None and d.get("config_hash") == cfg.hash()
+
+
+def read_unit(out: Path, unit_id: str) -> dict[str, Any] | None:
+    p = unit_path(out, unit_id)
     if not p.exists():
-        return False
+        return None
+    try:
+        d: dict[str, Any] = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return d
+
+
+def is_done(out: Path, unit: Unit, cfg: StudyConfig) -> bool:
+    return unit_complete(read_unit(out, unit.id), cfg)
+
+
+def unit_provenance(out: Path, unit_id: str) -> dict[str, Any] | None:
+    """Git SHA and versions recorded when the unit was computed (None if not recorded)."""
+    p = timing_path(out, unit_id)
+    if not p.exists():
+        return None
     try:
         d = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return False
-    return d.get("config_hash") == cfg.hash() and d.get("peekaudit_version") == __version__
+        return None
+    prov = d.get("provenance")
+    return prov if isinstance(prov, dict) else None
 
 
-def _run_and_save(unit_id: str, cfg_dict: dict[str, Any], out_str: str) -> tuple[str, float, bool]:
+def _run_and_save(
+    unit_id: str, cfg_dict: dict[str, Any], out_str: str, provenance: dict[str, Any] | None = None
+) -> tuple[str, float, bool]:
     t0 = time.perf_counter()
     cfg = StudyConfig.from_dict(cfg_dict)
     out = Path(out_str)
@@ -289,9 +369,10 @@ def _run_and_save(unit_id: str, cfg_dict: dict[str, Any], out_str: str) -> tuple
     os.replace(tmp_cache, cache)
     _atomic_write(unit_path(out, unit_id), json.dumps(summary, indent=1, sort_keys=True))
     elapsed = time.perf_counter() - t0
-    _atomic_write(
-        out / "units" / f"{unit_id}.timing.json", json.dumps({"seconds": round(elapsed, 2)})
-    )
+    timing: dict[str, Any] = {"seconds": round(elapsed, 2)}
+    if provenance is not None:
+        timing["provenance"] = provenance
+    _atomic_write(timing_path(out, unit_id), json.dumps(timing, sort_keys=True))
     return unit_id, elapsed, bool(summary["verified_ok"])
 
 
@@ -348,19 +429,22 @@ def run_study(
     echo: Callable[[str], None] = print,
 ) -> RunResult:
     """Run (or resume) a study. Completed units are skipped unless ``force``."""
+    cfg.validate()  # before anything is written, so a bad config never claims the folder
     out = Path(out_dir)
-    (out / "units").mkdir(parents=True, exist_ok=True)
-    (out / "cache").mkdir(exist_ok=True)
     from peekaudit.cli import environment_report
 
+    provenance: dict[str, Any] = {"git_sha": _git_sha(), "versions": environment_report()}
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    start = {"started": now, **provenance}
     manifest_path = out / "manifest.json"
-    manifest = {
+    manifest: dict[str, Any] = {
         "study": cfg.name,
         "config": cfg.to_dict(),
         "config_hash": cfg.hash(),
-        "versions": environment_report(),
-        "git_sha": _git_sha(),
-        "started": datetime.now(UTC).isoformat(timespec="seconds"),
+        **provenance,
+        "started": now,
+        "first_started": now,
+        "starts": [start],
     }
     if manifest_path.exists():
         old = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -369,9 +453,17 @@ def run_study(
                 f"{out} holds a study with a different config (hash {old.get('config_hash')});"
                 " use --force or another --out"
             )
-        manifest["first_started"] = old.get("first_started", old.get("started"))
-    else:
-        manifest["first_started"] = manifest["started"]
+        if old.get("config_hash") == cfg.hash():
+            # Keep the first start's provenance at the top level and append this start.
+            # Manifests written before the history existed hold only their latest start.
+            starts = old.get("starts") or [
+                {k: old.get(k) for k in ("started", "git_sha", "versions")}
+            ]
+            manifest.update({k: old[k] for k in ("git_sha", "versions", "started") if k in old})
+            manifest["first_started"] = old.get("first_started", old.get("started"))
+            manifest["starts"] = [*starts, start]
+    (out / "units").mkdir(parents=True, exist_ok=True)
+    (out / "cache").mkdir(exist_ok=True)
     _atomic_write(manifest_path, json.dumps(manifest, indent=1, sort_keys=True))
 
     units = cfg.unit_list()
@@ -379,6 +471,13 @@ def run_study(
         units = [u for u in units if fnmatch.fnmatch(u.id, units_glob)]
     todo = [u for u in units if force or not is_done(out, u, cfg)]
     todo.sort(key=_cost, reverse=True)
+    todo_ids = {u.id for u in todo}
+    other_code = [
+        u.id
+        for u in units
+        if u.id not in todo_ids
+        and (unit_provenance(out, u.id) or {}).get("git_sha") != provenance["git_sha"]
+    ]
     res = RunResult(total=len(units), skipped=len(units) - len(todo))
     n_workers = effective_workers(workers)
     if workers is not None and workers > n_workers:
@@ -395,6 +494,11 @@ def run_study(
         f"start study={cfg.name} hash={cfg.hash()} units={len(units)} todo={len(todo)} "
         f"skipped={res.skipped} workers={n_workers}"
     )
+    if other_code:
+        log(
+            f"warning: {len(other_code)} completed units were computed by other code (git SHA"
+            " differs or was not recorded), so results mix code versions; --force recomputes"
+        )
     t0 = time.perf_counter()
     done = res.skipped
 
@@ -419,7 +523,7 @@ def run_study(
     if n_workers == 1 or len(todo) <= 1:
         for u in todo:
             try:
-                finished(*_run_and_save(u.id, cfg_dict, str(out)))
+                finished(*_run_and_save(u.id, cfg_dict, str(out), provenance))
             except Exception as exc:  # noqa: BLE001 - logged and reported, run continues
                 res.failed.append(u.id)
                 log(f"FAILED {u.id}: {type(exc).__name__}: {exc}")
@@ -427,7 +531,7 @@ def run_study(
         for var in _THREAD_VARS:  # inherited by spawned workers before they import numpy
             os.environ[var] = "1"
         with ProcessPoolExecutor(max_workers=n_workers) as ex:
-            futs = {ex.submit(_run_and_save, u.id, cfg_dict, str(out)): u for u in todo}
+            futs = {ex.submit(_run_and_save, u.id, cfg_dict, str(out), provenance): u for u in todo}
             for fut in as_completed(futs):
                 u = futs[fut]
                 try:
@@ -450,19 +554,22 @@ def study_status(out_dir: str | Path) -> dict[str, Any]:
     cfg = StudyConfig.from_dict(manifest["config"])
     units = cfg.unit_list()
     done, unverified = [], []
+    by_sha: dict[str, int] = {}
     for u in units:
-        if is_done(out, u, cfg):
+        d = read_unit(out, u.id)
+        if d is not None and unit_complete(d, cfg):
             done.append(u.id)
-            d = json.loads(unit_path(out, u.id).read_text(encoding="utf-8"))
             if not d.get("verified_ok", False):
                 unverified.append(u.id)
+            sha = str((unit_provenance(out, u.id) or {}).get("git_sha", "not recorded"))
+            by_sha[sha] = by_sha.get(sha, 0) + 1
     log = out / "progress.log"
     lines = log.read_text(encoding="utf-8").splitlines() if log.exists() else []
     failed = sorted({ln.split("FAILED ", 1)[1].split(":")[0] for ln in lines if "FAILED " in ln})
     failed = [f for f in failed if f not in done]
     secs = []
     for u in done:
-        t = out / "units" / f"{u}.timing.json"
+        t = timing_path(out, u)
         if t.exists():
             secs.append(json.loads(t.read_text(encoding="utf-8"))["seconds"])
     return {
@@ -473,6 +580,8 @@ def study_status(out_dir: str | Path) -> dict[str, Any]:
         "failed": failed,
         "unverified": unverified,
         "cpu_minutes_done": round(sum(secs) / 60, 1),
+        "units_by_git_sha": by_sha,
+        "current_git_sha": _git_sha(),
         "last_log": lines[-1] if lines else "",
     }
 

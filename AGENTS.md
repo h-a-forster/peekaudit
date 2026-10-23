@@ -40,7 +40,7 @@ conformance check.
 |---|---|---|
 | `src/peekaudit/stats.py` | Clopper-Pearson, exact binomial test, Holm, mean CI | done |
 | `src/peekaudit/gst.py` | Lan-DeMets solver (recursive integration), spending functions | done |
-| `src/peekaudit/cli.py` | `run`, `status`, `report`, `verify`, `conform`, `versions` | done |
+| `src/peekaudit/cli.py` | `run`, `status`, `sensitivity`, `report`, `verify`, `conform`, `versions` | done |
 | `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | done |
 | `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
 | `src/peekaudit/methods/base.py` | `MethodOutput`, `EvalContext`, `Method`, `ScalarMethod`, stopping rule | done |
@@ -49,8 +49,9 @@ conformance check.
 | `src/peekaudit/methods/spotify_adapter.py` | spotify-confidence engine calls + mirror | done |
 | `src/peekaudit/methods/registry.py` | method names -> factories | done |
 | `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | done |
-| `src/peekaudit/runner.py` | units, process pool, checkpoints, progress log | done |
-| `src/peekaudit/report.py` | tables, Holm families, figures | done |
+| `src/peekaudit/runner.py` | units, config validation, process pool, checkpoints, provenance, progress log | done |
+| `src/peekaudit/sensitivity.py` | FPR counting only looks with both arms >= 150 (checkpointed) | done |
+| `src/peekaudit/report.py` | tables, Holm families, gates, detection limit, findings, limitations, figures | done |
 | `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | done |
 | `scripts/reference_values.py` | recomputes the pinned oracle values and MC power table | done |
 | `tests/` | unit tests; `@pytest.mark.slow` Monte Carlo tests run with `--runslow` | ongoing |
@@ -74,13 +75,18 @@ ubuntu py3.11, ubuntu py3.13, windows py3.13, plus a lint job.
 ```sh
 uv run peekaudit run --config quick --out runs/quick      # target < 45 min, 4 workers
 uv run peekaudit status runs/quick
+uv run peekaudit sensitivity runs/quick                   # ~2 min, adds the guarded FPR
 uv run peekaudit report runs/quick --publish docs/results/quick
-uv run peekaudit run --config full --out runs/full        # R_AA = 20,000; est. 80 min idle
+uv run peekaudit run --config full --out runs/full        # R_AA = 20,000; ~2.5-3 h projected
 ```
 
 Before the full run, time a one-unit pilot and project the total. If it would overrun the
 estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_study.py`
 (retry up to 3 times; checkpoints make reruns idempotent) and watch `progress.log`.
+Completeness is one rule everywhere (`runner.unit_complete`: same config hash). The config
+hash does not cover the code: after a code change that affects results, rerun with
+`--force` (or a fresh `--out`); `run`/`status` warn about units from other code and the
+report lists every git SHA found.
 
 ## Key facts already established (with evidence)
 
@@ -112,7 +118,7 @@ estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_stu
   study data and on random GST paths with overrun. spotify's alpha is 1 - 0.95 =
   0.050000000000000044; the mirror uses it. The overrun rescaling (0.0198 full path vs
   0.0297 look by look) is a regression test. Only the scaffold's gbstats fixture is
-  reproduced; the other sdist/repo fixtures need a download not done in this session.
+  reproduced; the other sdist/repo fixtures are not yet copied (requires a download).
 - **Done (M5):** `runner.py`, `verify.py`, CLI `run`/`status`/`verify`,
   `scripts/run_study.py`. Pilot on an idle core: `lognorm-n20000-b20-aa` 170 s (140 s of it
   real-engine verification, mostly spotify). Projection: quick ~32 min wall on 4 workers.
@@ -123,12 +129,25 @@ estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_stu
   0 failed, 0 unverified, 50.3 min wall / 200.6 CPU-min on 4 workers (machine loaded by
   other jobs). All 40 gates pass. Published to `docs/results/quick/`. A single-process
   rerun of one unit is byte-identical. `docs/results/verify.json`: 0 mismatches.
-- **Done (M8):** README, CHANGELOG 0.1.0, version 0.1.0 (no tag). The report loader matches
-  unit checkpoints on config hash only, so the version bump does not invalidate `runs/quick`.
-  The spotify mirror's single-unit-control `IndexError` branch was added after the run; it
-  cannot occur in the study grid (control arms start at 3 units).
+- **Done (M8):** README, CHANGELOG 0.1.0, version 0.1.0 (no tag). The spotify mirror's
+  single-unit-control `IndexError` branch was added after the run; it cannot occur in the
+  study grid (control arms start at 3 units).
+- **Done (audit fixes, Unreleased in CHANGELOG):** one completeness rule (config hash) for
+  run/status/report; per-unit provenance in the timing sidecar and a manifest start history
+  (`runs/quick` predates this: its 52 units are attributed to the manifest's single start,
+  `fa12471`, which the progress log confirms); config validation; `conformance.critical_rate`
+  separates the FPR null (alpha) from the Holm FWER; wrapper log scrubbed of local paths;
+  identity gates relabelled as mirror self-consistency; DESIGN 5.4 at m = 96.
+  `peekaudit sensitivity` run on `runs/quick` (28 A/A units, 1.6 min, every unguarded count
+  equals the run's). The generated report now has the detection limit, findings with
+  Holm-adjusted p, the min-arm sensitivity, limitations and deviations; republished to
+  `docs/results/quick/`. Study numbers are unchanged (no re-run needed: only reporting and
+  the added sensitivity changed). README results rewritten around the small-arm mechanism.
 - **Not done / next:** a hand-written root `REPORT.md` (the generated
-  `docs/results/quick/REPORT.md` is the current report); the full config
-  (20,000 / 10,000 replicates, ~80 min idle); copying the gbstats sdist and spotify repo
-  fixtures (needs a download); a guarded gbstats variant once the product's minimum-sample
-  rule is confirmed from source; tagging and publishing.
+  `docs/results/quick/REPORT.md` is the current report and now holds the limitations and
+  findings); the full config (20,000 / 10,000 replicates, ~2.5-3 h projected on 4 idle
+  workers: time a pilot first); copying the gbstats sdist and spotify repo fixtures (needs
+  a download); a guarded gbstats engine variant once the product's minimum-sample rule is
+  confirmed from source (the sensitivity analysis is the interim answer); an engine-backed
+  identity check (the two identity gates share arithmetic with the mirrors); tagging and
+  publishing (README install points at the repository without a tag until then).

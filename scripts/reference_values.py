@@ -54,7 +54,7 @@ def lan_demets() -> None:
 def mc_power() -> None:
     print("Violation test: one-sided exact binomial, H0 FPR <= 0.05, Holm over m cells")
     for reps in (2000, 4000, 20000):
-        for m in (1, 84):
+        for m in (1, 96):  # 96 = primary A/A cells of an anytime method
             level = ALPHA / m
             k = int(binom.isf(level, reps, ALPHA))
             while binom.sf(k - 1, reps, ALPHA) > level:

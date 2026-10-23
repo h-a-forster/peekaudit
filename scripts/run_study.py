@@ -17,6 +17,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 
+def loggable_command(cmd: list[str]) -> str:
+    """The command as logged: the interpreter's absolute path (which can contain a user
+    name, and progress logs may be published) is replaced by its bare name."""
+    return " ".join(["python", *cmd[1:]])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--config", default="quick")
@@ -31,11 +37,12 @@ def main() -> int:
         sys.executable, "-m", "peekaudit", "run", "--config", args.config,
         "--out", str(out), "--workers", str(args.workers),
     ]  # fmt: skip
+    shown = loggable_command(cmd)
     code = 1
     for attempt in range(1, args.attempts + 1):
         stamp = datetime.now(UTC).isoformat(timespec="seconds")
         with log.open("a", encoding="utf-8") as fh:
-            fh.write(f"{stamp} wrapper attempt {attempt}/{args.attempts}: {' '.join(cmd)}\n")
+            fh.write(f"{stamp} wrapper attempt {attempt}/{args.attempts}: {shown}\n")
         code = subprocess.call(cmd)
         if code == 0:
             return 0

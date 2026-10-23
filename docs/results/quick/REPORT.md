@@ -11,8 +11,9 @@ the method's claim; no pass/fail). Unmarked claimed cells are consistent.
 - Replicates: 4,000 per A/A unit, 2,000 per A/B unit; chunks of 250; master seed 20261023; config hash `82e303ecf6547d58`.
 - Units: 52 of 52 completed; methods: 11; schedules: fixed1, daily14, stream140, overrun21.
 - Engine verification: first 10 replicates per unit and schedule (spotify.gst on stream140: 2), real engine called look by look.
-- Code: git `fa12471ca93044c8a208658d23887b3923efc70b`; started 2026-10-23T18:58:41+00:00.
-- Versions: gbstats 0.8.0, numpy 1.26.4, pandas 1.5.3, peekaudit 0.0.1, pydantic 2.14.1, python 3.11.9, scipy 1.17.1, spotify-confidence 4.1.0, statsmodels 0.15.0.
+- Started 2026-10-23T18:58:41+00:00; 1 recorded start(s); 200.6 CPU-minutes over finished units.
+- Code: git `fa12471ca93044c8a208658d23887b3923efc70b` for 52 units (source: run manifest (single start)); versions: gbstats 0.8.0, numpy 1.26.4, pandas 1.5.3, peekaudit 0.0.1, pydantic 2.14.1, python 3.11.9, scipy 1.17.1, spotify-confidence 4.1.0, statsmodels 0.15.0.
+- Deviations from the design: see the last section of this report.
 
 ## Sanity gates (DESIGN 5.3, 99.9% intervals)
 
@@ -55,8 +56,8 @@ the method's claim; no pass/fail). Unmarked claimed cells are consistent.
 | power calibration: naive z fixed1 normal pi=0.2 | pass | power 0.7795, 99.9% CI [0.7477, 0.8092] vs 0.80 |
 | power calibration: naive z fixed1 bern_p10 pi=0.5 | pass | power 0.8080, 99.9% CI [0.7776, 0.8360] vs 0.80 |
 | power calibration: naive z fixed1 bern_p10 pi=0.2 | pass | power 0.7840, 99.9% CI [0.7524, 0.8134] vs 0.80 |
-| identity: bayes_vs_z10 | pass | 0 mismatches, 0 ties in 33,600,000 replicate-looks |
-| identity: acs_vs_gbstats_abs_nmax | pass | 0 mismatches, 0 ties in 23,487,659 replicate-looks |
+| mirror self-consistency: bayes_vs_z10 | pass | Bayes mirror vs z at level 0.10, same variance helper: 0 mismatches, 0 ties in 33,600,000 replicate-looks |
+| mirror self-consistency: acs_vs_gbstats_abs_nmax | pass | ref.acs vs gbstats absolute mirror, shared CS formula: 0 mismatches, 0 ties in 23,487,659 replicate-looks |
 | engine in-loop agreement | pass | all units agree |
 
 ## Engine mirror verification (in-loop, real engine vs vectorised mirror)
@@ -105,6 +106,336 @@ the method's claim; no pass/fail). Unmarked claimed cells are consistent.
 | ref.gst_obf | fpr_primary | 72 | 11 | 61 | 0 |
 | ref.gst_obf | fpr_stress | 12 | 6 | 6 | 0 |
 | ref.gst_obf | coverage | 72 | 2 | 70 | 0 |
+
+## Monte Carlo detection limit
+
+A cell is flagged when the one-sided exact binomial test of FPR <= 5% rejects after
+Holm adjustment at family-wise level 0.05 within the method's family. The table
+gives the smallest observed FPR that can be flagged at the strictest Holm step (m
+cells). Smaller excesses can go undetected, so 'consistent' means 'no excess
+detected at this size', not 'calibrated'.
+
+| method | family | cells m | replicates | smallest flaggable FPR % |
+|---|---|---|---|---|
+| gbstats.seq.rel | fpr_primary | 96 | 4,000 | 6.20 |
+| gbstats.seq.rel | fpr_stress | 16 | 4,000 | 6.00 |
+| gbstats.seq.rel.tuned | fpr_primary | 96 | 4,000 | 6.20 |
+| gbstats.seq.rel.tuned | fpr_stress | 16 | 4,000 | 6.00 |
+| gbstats.seq.abs | fpr_primary | 96 | 4,000 | 6.20 |
+| gbstats.seq.abs | fpr_stress | 16 | 4,000 | 6.00 |
+| gbstats.ttest.rel | fpr_primary | 24 | 4,000 | 6.05 |
+| gbstats.ttest.rel | fpr_stress | 4 | 4,000 | 5.80 |
+| spotify.gst | fpr_primary | 60 | 4,000 | 6.15 |
+| spotify.gst | fpr_stress | 12 | 4,000 | 5.95 |
+| spotify.z | fpr_primary | 20 | 4,000 | 6.02 |
+| spotify.z | fpr_stress | 4 | 4,000 | 5.80 |
+| ref.naive_z | fpr_primary | 24 | 4,000 | 6.05 |
+| ref.naive_z | fpr_stress | 4 | 4,000 | 5.80 |
+| ref.msprt | fpr_primary | 96 | 4,000 | 6.20 |
+| ref.msprt | fpr_stress | 16 | 4,000 | 6.00 |
+| ref.acs | fpr_primary | 96 | 4,000 | 6.20 |
+| ref.acs | fpr_stress | 16 | 4,000 | 6.00 |
+| ref.gst_obf | fpr_primary | 72 | 4,000 | 6.15 |
+| ref.gst_obf | fpr_stress | 12 | 4,000 | 5.95 |
+
+## Findings (every violation)
+
+Kinds: 'sequential' = FPR excess under repeated looks; 'single look' = excess of the
+one analysis at N_max (the single z-test failing with few events or heavy skew in
+a small arm, not a sequential failure); 'coverage' = the interval at stopping
+misses the true effect more than 5% of the time. For A/A cells, 'first look' and
+'arm < 150' give the share of false
+positives whose first rejection came at the first look, or at a look where the
+smaller arm held fewer than 150 units.
+
+- gbstats.seq.rel (sequential): FPR 15.8% [14.7, 17.0] on lognorm, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 9.4e-141, m = 96); first look 0%, arm < 150 94%.
+- gbstats.seq.rel (sequential, stress): FPR 14.4% [13.4, 15.6] on pareto_a15, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 8.6e-112, m = 16); first look 6%, arm < 150 26%.
+- gbstats.seq.rel (sequential): FPR 13.4% [12.3, 14.4] on bern_p01, N_max = 20,000, 50% to B, stream140 (Holm-adjusted p = 1.4e-89, m = 96); first look 0%, arm < 150 1%.
+- gbstats.seq.rel (sequential): FPR 12.5% [11.5, 13.6] on bern_p01, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 3.1e-74, m = 96); first look 0%, arm < 150 0%.
+- gbstats.seq.rel (sequential): FPR 11.2% [10.2, 12.2] on lognorm, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 1.2e-52, m = 96); first look 12%, arm < 150 45%.
+- gbstats.seq.rel (sequential): FPR 10.2% [9.3, 11.2] on bern_p01, N_max = 1,000, 50% to B, overrun21 (Holm-adjusted p = 5e-39, m = 96); first look 0%, arm < 150 0%.
+- gbstats.seq.rel (sequential): FPR 9.3% [8.4, 10.3] on bern_p01, N_max = 1,000, 50% to B, stream140 (Holm-adjusted p = 1.1e-27, m = 96); first look 0%, arm < 150 1%.
+- gbstats.seq.rel (sequential): FPR 9.1% [8.3, 10.1] on lognorm, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 2.2e-25, m = 96); first look 16%, arm < 150 73%.
+- gbstats.seq.rel (sequential, stress): FPR 9.1% [8.2, 10.0] on pareto_a15, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.3e-25, m = 16); first look 0%, arm < 150 85%.
+- gbstats.seq.rel (sequential, stress): FPR 8.7% [7.8, 9.6] on pareto_a15, N_max = 20,000, 20% to B, overrun21 (Holm-adjusted p = 1.4e-21, m = 16); first look 24%, arm < 150 0%.
+- gbstats.seq.rel (sequential, stress): FPR 8.5% [7.6, 9.4] on pareto_a15, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 2.5e-19, m = 16); first look 8%, arm < 150 66%.
+- gbstats.seq.rel (sequential): FPR 8.0% [7.2, 8.9] on bern_p01, N_max = 1,000, 50% to B, daily14 (Holm-adjusted p = 2.9e-14, m = 96); first look 0%, arm < 150 1%.
+- gbstats.seq.rel (sequential, stress): FPR 8.0% [7.2, 8.9] on pareto_a15, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 6.4e-15, m = 16); first look 26%, arm < 150 0%.
+- gbstats.seq.rel (sequential): FPR 7.6% [6.8, 8.5] on lognorm, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 4.2e-11, m = 96); first look 19%, arm < 150 87%.
+- gbstats.seq.rel (sequential, stress): FPR 6.9% [6.2, 7.8] on pareto_a15, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 7.5e-07, m = 16); first look 9%, arm < 150 81%.
+- gbstats.seq.rel (sequential): FPR 6.8% [6.0, 7.6] on bern_p01, N_max = 20,000, 20% to B, overrun21 (Holm-adjusted p = 3.4e-05, m = 96); first look 8%, arm < 150 0%.
+- gbstats.seq.rel (sequential): FPR 6.7% [5.9, 7.5] on bern_p01, N_max = 20,000, 50% to B, overrun21 (Holm-adjusted p = 0.00012, m = 96); first look 40%, arm < 150 0%.
+- gbstats.seq.rel (sequential): FPR 6.5% [5.7, 7.3] on bern_p01, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 0.0019, m = 96); first look 8%, arm < 150 0%.
+- gbstats.seq.rel (sequential): FPR 6.5% [5.7, 7.3] on bern_p01, N_max = 20,000, 50% to B, daily14 (Holm-adjusted p = 0.0025, m = 96); first look 41%, arm < 150 0%.
+- gbstats.seq.rel.tuned (sequential): FPR 36.5% [35.0, 38.0] on lognorm, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 0, m = 96); first look 0%, arm < 150 98%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 25.1% [23.8, 26.5] on pareto_a15, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 0, m = 16); first look 0%, arm < 150 96%.
+- gbstats.seq.rel.tuned (sequential): FPR 19.7% [18.4, 20.9] on lognorm, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 7.4e-234, m = 96); first look 31%, arm < 150 88%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 18.9% [17.7, 20.1] on pareto_a15, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 2.7e-214, m = 16); first look 25%, arm < 150 86%.
+- gbstats.seq.rel.tuned (sequential): FPR 18.4% [17.2, 19.6] on lognorm, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 1e-200, m = 96); first look 33%, arm < 150 94%.
+- gbstats.seq.rel.tuned (sequential): FPR 17.9% [16.7, 19.1] on lognorm, N_max = 1,000, 50% to B, stream140 (Holm-adjusted p = 3e-188, m = 96); first look 22%, arm < 150 87%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 17.6% [16.4, 18.8] on pareto_a15, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 2.5e-182, m = 16); first look 27%, arm < 150 92%.
+- gbstats.seq.rel.tuned (sequential): FPR 12.7% [11.7, 13.8] on bern_p01, N_max = 1,000, 50% to B, overrun21 (Holm-adjusted p = 9.3e-78, m = 96); first look 0%, arm < 150 4%.
+- gbstats.seq.rel.tuned (sequential): FPR 11.8% [10.8, 12.8] on bern_p10, N_max = 1,000, 50% to B, stream140 (Holm-adjusted p = 4.5e-62, m = 96); first look 0%, arm < 150 80%.
+- gbstats.seq.rel.tuned (sequential): FPR 11.5% [10.5, 12.5] on bern_p01, N_max = 1,000, 50% to B, stream140 (Holm-adjusted p = 2.7e-57, m = 96); first look 0%, arm < 150 5%.
+- gbstats.seq.rel.tuned (sequential): FPR 11.1% [10.1, 12.1] on bern_p10, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 3.8e-51, m = 96); first look 0%, arm < 150 94%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 10.4% [9.5, 11.4] on pareto_a15, N_max = 1,000, 50% to B, stream140 (Holm-adjusted p = 1.3e-42, m = 16); first look 12%, arm < 150 76%.
+- gbstats.seq.rel.tuned (sequential): FPR 10.2% [9.3, 11.2] on bern_p01, N_max = 1,000, 50% to B, daily14 (Holm-adjusted p = 4.8e-39, m = 96); first look 0%, arm < 150 5%.
+- gbstats.seq.rel.tuned (sequential): FPR 9.2% [8.3, 10.1] on pareto_a25, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 5.6e-26, m = 96); first look 0%, arm < 150 93%.
+- gbstats.seq.rel.tuned (sequential): FPR 9.1% [8.3, 10.1] on bern_p01, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 2.1e-25, m = 96); first look 0%, arm < 150 0%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 8.9% [8.1, 9.9] on pareto_a15, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 2.5e-24, m = 16); first look 1%, arm < 150 6%.
+- gbstats.seq.rel.tuned (sequential): FPR 8.5% [7.6, 9.4] on bern_p01, N_max = 20,000, 50% to B, stream140 (Holm-adjusted p = 1.6e-18, m = 96); first look 0%, arm < 150 0%.
+- gbstats.seq.rel.tuned (sequential): FPR 8.2% [7.4, 9.1] on lognorm, N_max = 1,000, 50% to B, overrun21 (Holm-adjusted p = 2.4e-16, m = 96); first look 27%, arm < 150 63%.
+- gbstats.seq.rel.tuned (sequential): FPR 7.7% [6.9, 8.5] on lognorm, N_max = 1,000, 50% to B, daily14 (Holm-adjusted p = 2.5e-11, m = 96); first look 29%, arm < 150 68%.
+- gbstats.seq.rel.tuned (sequential): FPR 7.6% [6.8, 8.5] on bern_p10, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 3.9e-11, m = 96); first look 0%, arm < 150 86%.
+- gbstats.seq.rel.tuned (sequential): FPR 7.5% [6.7, 8.4] on bern_p10, N_max = 1,000, 50% to B, overrun21 (Holm-adjusted p = 2.4e-10, m = 96); first look 18%, arm < 150 64%.
+- gbstats.seq.rel.tuned (sequential): FPR 7.1% [6.3, 7.9] on bern_p10, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 6e-07, m = 96); first look 0%, arm < 150 93%.
+- gbstats.seq.rel.tuned (sequential): FPR 6.9% [6.2, 7.8] on bern_p10, N_max = 1,000, 50% to B, daily14 (Holm-adjusted p = 5.4e-06, m = 96); first look 20%, arm < 150 70%.
+- gbstats.seq.rel.tuned (sequential): FPR 6.9% [6.1, 7.7] on pareto_a25, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 1.1e-05, m = 96); first look 9%, arm < 150 81%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 6.8% [6.0, 7.6] on pareto_a15, N_max = 1,000, 50% to B, overrun21 (Holm-adjusted p = 6e-06, m = 16); first look 23%, arm < 150 62%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 6.6% [5.9, 7.4] on pareto_a15, N_max = 20,000, 20% to B, overrun21 (Holm-adjusted p = 3.7e-05, m = 16); first look 3%, arm < 150 0%.
+- gbstats.seq.rel.tuned (sequential): FPR 6.3% [5.5, 7.1] on pareto_a25, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 0.015, m = 96); first look 10%, arm < 150 89%.
+- gbstats.seq.rel.tuned (sequential, stress): FPR 6.3% [5.5, 7.1] on pareto_a15, N_max = 1,000, 50% to B, daily14 (Holm-adjusted p = 0.0018, m = 16); first look 24%, arm < 150 67%.
+- gbstats.seq.abs (sequential, stress): FPR 6.0% [5.3, 6.8] on pareto_a15, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 0.027, m = 16); first look 0%, arm < 150 4%.
+- gbstats.ttest.rel (single look, stress): FPR 13.1% [12.1, 14.2] on pareto_a15, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 2.5e-86, m = 4); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look): FPR 9.4% [8.5, 10.3] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 7.4e-29, m = 24); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look): FPR 9.0% [8.1, 9.9] on bern_p01, N_max = 1,000, 50% to B, fixed1 (Holm-adjusted p = 1.4e-24, m = 24); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look, stress): FPR 8.2% [7.4, 9.1] on pareto_a15, N_max = 20,000, 20% to B, fixed1 (Holm-adjusted p = 8.4e-18, m = 4); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look, stress): FPR 7.4% [6.6, 8.2] on pareto_a15, N_max = 1,000, 50% to B, fixed1 (Holm-adjusted p = 1.2e-10, m = 4); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look): FPR 6.6% [5.9, 7.4] on pareto_a25, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 8.2e-05, m = 24); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look): FPR 6.2% [5.5, 7.0] on lognorm, N_max = 20,000, 20% to B, fixed1 (Holm-adjusted p = 0.0054, m = 24); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (single look): FPR 6.0% [5.3, 6.8] on lognorm, N_max = 1,000, 50% to B, fixed1 (Holm-adjusted p = 0.034, m = 24); first look 100%, arm < 150 0%.
+- gbstats.ttest.rel (coverage): 89.4% [88.0, 90.7] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.2e-22, m = 24).
+- gbstats.ttest.rel (coverage): 92.3% [91.0, 93.4] on lognorm, N_max = 1,000, 50% to B, fixed1 (Holm-adjusted p = 3.2e-06, m = 24).
+- gbstats.ttest.rel (coverage): 91.0% [89.7, 92.2] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.6e-12, m = 24).
+- gbstats.ttest.rel (coverage): 90.8% [89.5, 92.1] on bern_p01, N_max = 1,000, 50% to B, fixed1 (Holm-adjusted p = 2.3e-13, m = 24).
+- spotify.gst (sequential): FPR 21.4% [20.2, 22.8] on bern_p01, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 7.4e-284, m = 60); first look 0%, arm < 150 69%.
+- spotify.gst (sequential): FPR 20.4% [19.2, 21.7] on bern_p01, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 9e-256, m = 60); first look 4%, arm < 150 62%.
+- spotify.gst (sequential): FPR 20.4% [19.2, 21.7] on bern_p10, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 4.3e-255, m = 60); first look 46%, arm < 150 91%.
+- spotify.gst (sequential, stress): FPR 10.4% [9.5, 11.4] on pareto_a15, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 2.7e-42, m = 12); first look 0%, arm < 150 70%.
+- spotify.gst (sequential): FPR 10.1% [9.2, 11.0] on lognorm, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 3e-37, m = 60); first look 0%, arm < 150 69%.
+- spotify.gst (sequential): FPR 9.8% [8.9, 10.8] on lognorm, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 2.5e-34, m = 60); first look 3%, arm < 150 64%.
+- spotify.gst (sequential, stress): FPR 9.8% [8.9, 10.7] on pareto_a15, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 4.4e-34, m = 12); first look 2%, arm < 150 65%.
+- spotify.gst (sequential): FPR 9.7% [8.8, 10.6] on bern_p10, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 3.9e-32, m = 60); first look 5%, arm < 150 78%.
+- spotify.gst (sequential): FPR 9.1% [8.3, 10.1] on pareto_a25, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.3e-25, m = 60); first look 0%, arm < 150 71%.
+- spotify.gst (sequential, stress): FPR 8.9% [8.0, 9.8] on pareto_a15, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 7.4e-24, m = 12); first look 0%, arm < 150 1%.
+- spotify.gst (sequential, stress): FPR 8.9% [8.0, 9.8] on pareto_a15, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 1.2e-23, m = 12); first look 1%, arm < 150 0%.
+- spotify.gst (sequential): FPR 8.8% [7.9, 9.7] on bern_p01, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 1.5e-21, m = 60); first look 0%, arm < 150 0%.
+- spotify.gst (sequential): FPR 8.6% [7.7, 9.5] on pareto_a25, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 5.3e-20, m = 60); first look 3%, arm < 150 69%.
+- spotify.gst (sequential): FPR 7.3% [6.6, 8.2] on bern_p01, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 4.7e-09, m = 60); first look 21%, arm < 150 0%.
+- spotify.gst (sequential): FPR 7.0% [6.2, 7.8] on lognorm, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 1.6e-06, m = 60); first look 3%, arm < 150 0%.
+- spotify.gst (sequential): FPR 6.9% [6.1, 7.7] on lognorm, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 4.6e-06, m = 60); first look 0%, arm < 150 1%.
+- spotify.gst (sequential): FPR 6.6% [5.8, 7.4] on normal, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 0.00032, m = 60); first look 0%, arm < 150 66%.
+- spotify.gst (sequential): FPR 6.1% [5.4, 6.9] on pareto_a25, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 0.039, m = 60); first look 1%, arm < 150 3%.
+- spotify.gst (single look): FPR 14.2% [13.2, 15.3] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1e-106, m = 60); first look 100%, arm < 150 0%.
+- spotify.gst (single look, stress): FPR 7.5% [6.7, 8.4] on pareto_a15, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 3.7e-11, m = 12); first look 100%, arm < 150 0%.
+- spotify.gst (single look): FPR 7.1% [6.3, 7.9] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 3.7e-07, m = 60); first look 100%, arm < 150 0%.
+- spotify.gst (single look, stress): FPR 6.6% [5.8, 7.4] on pareto_a15, N_max = 20,000, 20% to B, fixed1 (Holm-adjusted p = 6.6e-05, m = 12); first look 100%, arm < 150 0%.
+- spotify.gst (single look): FPR 6.1% [5.4, 6.9] on pareto_a25, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 0.048, m = 60); first look 100%, arm < 150 0%.
+- spotify.gst (coverage): 88.1% [86.6, 89.5] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 3.2e-32, m = 60).
+- spotify.gst (coverage): 81.5% [79.7, 83.1] on bern_p10, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 7.7e-103, m = 60).
+- spotify.gst (coverage): 91.1% [89.8, 92.3] on bern_p01, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.5e-11, m = 60).
+- spotify.z (single look): FPR 14.2% [13.2, 15.3] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 3.6e-107, m = 20); first look 100%, arm < 150 0%.
+- spotify.z (single look, stress): FPR 7.5% [6.7, 8.4] on pareto_a15, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.8e-11, m = 4); first look 100%, arm < 150 0%.
+- spotify.z (single look): FPR 7.1% [6.3, 7.9] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.4e-07, m = 20); first look 100%, arm < 150 0%.
+- spotify.z (single look, stress): FPR 6.6% [5.8, 7.4] on pareto_a15, N_max = 20,000, 20% to B, fixed1 (Holm-adjusted p = 2.8e-05, m = 4); first look 100%, arm < 150 0%.
+- spotify.z (single look): FPR 6.1% [5.4, 6.9] on pareto_a25, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 0.019, m = 20); first look 100%, arm < 150 0%.
+- spotify.z (coverage): 88.1% [86.6, 89.5] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.1e-32, m = 20).
+- spotify.z (coverage): 93.5% [92.3, 94.5] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 0.025, m = 20).
+- ref.naive_z (single look): FPR 14.2% [13.2, 15.3] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 4.3e-107, m = 24); first look 100%, arm < 150 0%.
+- ref.naive_z (single look, stress): FPR 7.5% [6.7, 8.4] on pareto_a15, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.8e-11, m = 4); first look 100%, arm < 150 0%.
+- ref.naive_z (single look): FPR 7.1% [6.3, 7.9] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.7e-07, m = 24); first look 100%, arm < 150 0%.
+- ref.naive_z (single look, stress): FPR 6.6% [5.8, 7.4] on pareto_a15, N_max = 20,000, 20% to B, fixed1 (Holm-adjusted p = 2.8e-05, m = 4); first look 100%, arm < 150 0%.
+- ref.naive_z (single look): FPR 6.1% [5.4, 6.9] on pareto_a25, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 0.024, m = 24); first look 100%, arm < 150 0%.
+- ref.naive_z (coverage): 88.1% [86.6, 89.5] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.3e-32, m = 24).
+- ref.naive_z (coverage): 93.5% [92.3, 94.5] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 0.03, m = 24).
+- ref.msprt (sequential): FPR 13.0% [12.0, 14.1] on bern_p10, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.4e-83, m = 96); first look 0%, arm < 150 99%.
+- ref.msprt (sequential): FPR 11.2% [10.2, 12.2] on bern_p01, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 1.2e-52, m = 96); first look 0%, arm < 150 0%.
+- ref.msprt (sequential): FPR 11.1% [10.1, 12.1] on ratio, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.7e-51, m = 96); first look 0%, arm < 150 98%.
+- ref.msprt (sequential): FPR 10.5% [9.5, 11.5] on pareto_a25, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.9e-42, m = 96); first look 0%, arm < 150 95%.
+- ref.msprt (sequential, stress): FPR 9.2% [8.3, 10.1] on pareto_a15, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 5.4e-27, m = 16); first look 0%, arm < 150 94%.
+- ref.msprt (sequential): FPR 8.1% [7.2, 9.0] on bern_p10, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 1.1e-14, m = 96); first look 31%, arm < 150 94%.
+- ref.msprt (sequential): FPR 7.8% [7.0, 8.7] on bern_p10, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 9.7e-13, m = 96); first look 32%, arm < 150 97%.
+- ref.msprt (sequential): FPR 7.4% [6.6, 8.3] on lognorm, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 3.6e-09, m = 96); first look 0%, arm < 150 94%.
+- ref.msprt (sequential): FPR 6.4% [5.7, 7.2] on bern_p01, N_max = 20,000, 20% to B, overrun21 (Holm-adjusted p = 0.0035, m = 96); first look 65%, arm < 150 0%.
+- ref.msprt (sequential): FPR 6.3% [5.6, 7.1] on bern_p01, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 0.014, m = 96); first look 0%, arm < 150 17%.
+- ref.msprt (sequential): FPR 6.2% [5.5, 7.0] on bern_p01, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 0.037, m = 96); first look 68%, arm < 150 0%.
+- ref.acs (sequential): FPR 9.2% [8.3, 10.1] on bern_p01, N_max = 1,000, 20% to B, overrun21 (Holm-adjusted p = 1.2e-25, m = 96); first look 0%, arm < 150 18%.
+- ref.acs (sequential): FPR 7.5% [6.7, 8.3] on bern_p10, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1e-09, m = 96); first look 0%, arm < 150 97%.
+- ref.gst_obf (sequential): FPR 20.3% [19.0, 21.6] on bern_p01, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 7.1e-251, m = 72); first look 0%, arm < 150 48%.
+- ref.gst_obf (sequential): FPR 20.2% [19.0, 21.5] on bern_p01, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.6e-249, m = 72); first look 0%, arm < 150 53%.
+- ref.gst_obf (sequential): FPR 8.6% [7.8, 9.6] on lognorm, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 2.2e-20, m = 72); first look 0%, arm < 150 50%.
+- ref.gst_obf (sequential): FPR 8.6% [7.7, 9.5] on lognorm, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 1.3e-19, m = 72); first look 0%, arm < 150 45%.
+- ref.gst_obf (sequential, stress): FPR 8.5% [7.7, 9.4] on pareto_a15, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 7.2e-20, m = 12); first look 0%, arm < 150 54%.
+- ref.gst_obf (sequential, stress): FPR 8.5% [7.6, 9.4] on pareto_a15, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 2.1e-19, m = 12); first look 0%, arm < 150 46%.
+- ref.gst_obf (sequential, stress): FPR 7.9% [7.1, 8.8] on pareto_a15, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 4e-14, m = 12); first look 0%, arm < 150 0%.
+- ref.gst_obf (sequential): FPR 7.7% [6.9, 8.6] on pareto_a25, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 1.3e-11, m = 72); first look 0%, arm < 150 54%.
+- ref.gst_obf (sequential, stress): FPR 7.6% [6.8, 8.5] on pareto_a15, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 6.8e-12, m = 12); first look 0%, arm < 150 0%.
+- ref.gst_obf (sequential): FPR 7.4% [6.7, 8.3] on pareto_a25, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 1.1e-09, m = 72); first look 0%, arm < 150 46%.
+- ref.gst_obf (sequential): FPR 6.5% [5.8, 7.3] on bern_p10, N_max = 1,000, 20% to B, stream140 (Holm-adjusted p = 0.00081, m = 72); first look 0%, arm < 150 55%.
+- ref.gst_obf (sequential): FPR 6.4% [5.7, 7.2] on lognorm, N_max = 20,000, 20% to B, daily14 (Holm-adjusted p = 0.0025, m = 72); first look 0%, arm < 150 0%.
+- ref.gst_obf (sequential): FPR 6.4% [5.7, 7.2] on lognorm, N_max = 20,000, 20% to B, stream140 (Holm-adjusted p = 0.0025, m = 72); first look 0%, arm < 150 0%.
+- ref.gst_obf (single look): FPR 14.2% [13.2, 15.3] on bern_p01, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 1.3e-106, m = 72); first look 100%, arm < 150 0%.
+- ref.gst_obf (single look, stress): FPR 7.5% [6.7, 8.4] on pareto_a15, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 3.7e-11, m = 12); first look 100%, arm < 150 0%.
+- ref.gst_obf (single look): FPR 7.1% [6.3, 7.9] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 4.9e-07, m = 72); first look 100%, arm < 150 0%.
+- ref.gst_obf (single look, stress): FPR 6.6% [5.8, 7.4] on pareto_a15, N_max = 20,000, 20% to B, fixed1 (Holm-adjusted p = 6.6e-05, m = 12); first look 100%, arm < 150 0%.
+- ref.gst_obf (coverage): 93.0% [91.8, 94.1] on lognorm, N_max = 1,000, 20% to B, daily14 (Holm-adjusted p = 0.0042, m = 72).
+- ref.gst_obf (coverage): 88.1% [86.6, 89.5] on lognorm, N_max = 1,000, 20% to B, fixed1 (Holm-adjusted p = 3.9e-32, m = 72).
+
+## Sensitivity: rejections only where both arms hold >= 150 units
+
+Many excesses arise at the first looks of small experiments. With 20% of traffic to
+B and N_max = 1,000, the first stream140 look has 6 users in A and 1 in B. A zero-
+variance arm gives a standard error of 0, or a z-statistic rests on a few
+observations, and the engine reports significance on 1 to 30 users in B. The engines
+apply no minimum; GrowthBook's product layer hides results below a minimum sample
+size of 150 (not part of the audited library). The rows below recompute FPR counting
+only rejections at looks where both arms hold at least 150 units (same data,
+same analysis, earlier results ignored), Holm-adjusted per method and family as in
+the main analysis. This is a sensitivity analysis, not a claim about any product.
+
+| method | claimed A/A cells (primary + stress) | flagged (all looks) | flagged (arms >= 150) |
+|---|---|---|---|
+| gbstats.seq.rel | 112 | 19 | 13 |
+| gbstats.seq.rel.tuned | 112 | 28 | 9 |
+| gbstats.seq.abs | 112 | 1 | 0 |
+| spotify.gst | 72 | 23 | 16 |
+| ref.msprt | 112 | 11 | 3 |
+| ref.acs | 112 | 2 | 1 |
+| ref.gst_obf | 84 | 17 | 16 |
+
+Cells flagged in the main analysis:
+
+| method | cell | FPR % all looks | FPR % arms >= 150 | looks kept | flagged |
+|---|---|---|---|---|---|
+| gbstats.seq.rel | lognorm, N_max = 1,000, 20% to B, stream140 | 15.8 [14.7, 17.0] | 3.5 [2.9, 4.1] | 36/140 | no |
+| gbstats.seq.rel | pareto_a15, N_max = 20,000, 20% to B, stream140 | 14.4 [13.4, 15.6] | 12.5 [11.5, 13.5] | 135/140 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 20,000, 50% to B, stream140 | 13.4 [12.3, 14.4] | 13.4 [12.3, 14.4] | 138/140 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 20,000, 20% to B, stream140 | 12.5 [11.5, 13.6] | 12.5 [11.5, 13.6] | 135/140 | **V** |
+| gbstats.seq.rel | lognorm, N_max = 20,000, 20% to B, stream140 | 11.2 [10.2, 12.2] | 8.5 [7.7, 9.4] | 135/140 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 1,000, 50% to B, overrun21 | 10.2 [9.3, 11.2] | 10.2 [9.3, 11.2] | 17/21 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 1,000, 50% to B, stream140 | 9.3 [8.4, 10.3] | 9.3 [8.4, 10.3] | 99/140 | **V** |
+| gbstats.seq.rel | lognorm, N_max = 1,000, 20% to B, overrun21 | 9.1 [8.3, 10.1] | 4.5 [3.9, 5.2] | 11/21 | no |
+| gbstats.seq.rel | pareto_a15, N_max = 1,000, 20% to B, stream140 | 9.1 [8.2, 10.0] | 4.2 [3.6, 4.8] | 36/140 | no |
+| gbstats.seq.rel | pareto_a15, N_max = 20,000, 20% to B, overrun21 | 8.7 [7.8, 9.6] | 8.7 [7.8, 9.6] | 21/21 | **V** |
+| gbstats.seq.rel | pareto_a15, N_max = 1,000, 20% to B, overrun21 | 8.5 [7.6, 9.4] | 5.1 [4.5, 5.9] | 11/21 | no |
+| gbstats.seq.rel | bern_p01, N_max = 1,000, 50% to B, daily14 | 8.0 [7.2, 8.9] | 8.0 [7.2, 8.9] | 10/14 | **V** |
+| gbstats.seq.rel | pareto_a15, N_max = 20,000, 20% to B, daily14 | 8.0 [7.2, 8.9] | 8.0 [7.2, 8.9] | 14/14 | **V** |
+| gbstats.seq.rel | lognorm, N_max = 1,000, 20% to B, daily14 | 7.6 [6.8, 8.5] | 2.7 [2.2, 3.3] | 4/14 | no |
+| gbstats.seq.rel | pareto_a15, N_max = 1,000, 20% to B, daily14 | 6.9 [6.2, 7.8] | 3.5 [2.9, 4.1] | 4/14 | no |
+| gbstats.seq.rel | bern_p01, N_max = 20,000, 20% to B, overrun21 | 6.8 [6.0, 7.6] | 6.8 [6.0, 7.6] | 21/21 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 20,000, 50% to B, overrun21 | 6.7 [5.9, 7.5] | 6.7 [5.9, 7.5] | 21/21 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 20,000, 20% to B, daily14 | 6.5 [5.7, 7.3] | 6.5 [5.7, 7.3] | 14/14 | **V** |
+| gbstats.seq.rel | bern_p01, N_max = 20,000, 50% to B, daily14 | 6.5 [5.7, 7.3] | 6.5 [5.7, 7.3] | 14/14 | **V** |
+| gbstats.seq.rel.tuned | lognorm, N_max = 1,000, 20% to B, stream140 | 36.5 [35.0, 38.0] | 5.3 [4.7, 6.1] | 36/140 | no |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 1,000, 20% to B, stream140 | 25.1 [23.8, 26.5] | 6.8 [6.0, 7.6] | 36/140 | **V** |
+| gbstats.seq.rel.tuned | lognorm, N_max = 1,000, 20% to B, overrun21 | 19.7 [18.4, 20.9] | 6.1 [5.4, 6.9] | 11/21 | no |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 1,000, 20% to B, overrun21 | 18.9 [17.7, 20.1] | 7.5 [6.7, 8.4] | 11/21 | **V** |
+| gbstats.seq.rel.tuned | lognorm, N_max = 1,000, 20% to B, daily14 | 18.4 [17.2, 19.6] | 4.2 [3.6, 4.9] | 4/14 | no |
+| gbstats.seq.rel.tuned | lognorm, N_max = 1,000, 50% to B, stream140 | 17.9 [16.7, 19.1] | 5.5 [4.8, 6.2] | 99/140 | no |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 1,000, 20% to B, daily14 | 17.6 [16.4, 18.8] | 5.6 [4.9, 6.4] | 4/14 | no |
+| gbstats.seq.rel.tuned | bern_p01, N_max = 1,000, 50% to B, overrun21 | 12.7 [11.7, 13.8] | 12.6 [11.6, 13.7] | 17/21 | **V** |
+| gbstats.seq.rel.tuned | bern_p10, N_max = 1,000, 50% to B, stream140 | 11.8 [10.8, 12.8] | 5.2 [4.6, 6.0] | 99/140 | no |
+| gbstats.seq.rel.tuned | bern_p01, N_max = 1,000, 50% to B, stream140 | 11.5 [10.5, 12.5] | 11.4 [10.5, 12.5] | 99/140 | **V** |
+| gbstats.seq.rel.tuned | bern_p10, N_max = 1,000, 20% to B, stream140 | 11.1 [10.1, 12.1] | 2.6 [2.2, 3.2] | 36/140 | no |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 1,000, 50% to B, stream140 | 10.4 [9.5, 11.4] | 5.1 [4.4, 5.8] | 99/140 | no |
+| gbstats.seq.rel.tuned | bern_p01, N_max = 1,000, 50% to B, daily14 | 10.2 [9.3, 11.2] | 10.2 [9.2, 11.1] | 10/14 | **V** |
+| gbstats.seq.rel.tuned | pareto_a25, N_max = 1,000, 20% to B, stream140 | 9.2 [8.3, 10.1] | 2.4 [1.9, 2.9] | 36/140 | no |
+| gbstats.seq.rel.tuned | bern_p01, N_max = 20,000, 20% to B, stream140 | 9.1 [8.3, 10.1] | 9.1 [8.3, 10.1] | 135/140 | **V** |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 20,000, 20% to B, stream140 | 8.9 [8.1, 9.9] | 8.7 [7.9, 9.6] | 135/140 | **V** |
+| gbstats.seq.rel.tuned | bern_p01, N_max = 20,000, 50% to B, stream140 | 8.5 [7.6, 9.4] | 8.5 [7.6, 9.4] | 138/140 | **V** |
+| gbstats.seq.rel.tuned | lognorm, N_max = 1,000, 50% to B, overrun21 | 8.2 [7.4, 9.1] | 4.7 [4.1, 5.4] | 17/21 | no |
+| gbstats.seq.rel.tuned | lognorm, N_max = 1,000, 50% to B, daily14 | 7.7 [6.9, 8.5] | 4.1 [3.5, 4.8] | 10/14 | no |
+| gbstats.seq.rel.tuned | bern_p10, N_max = 1,000, 20% to B, overrun21 | 7.6 [6.8, 8.5] | 2.6 [2.1, 3.1] | 11/21 | no |
+| gbstats.seq.rel.tuned | bern_p10, N_max = 1,000, 50% to B, overrun21 | 7.5 [6.7, 8.4] | 4.2 [3.6, 4.9] | 17/21 | no |
+| gbstats.seq.rel.tuned | bern_p10, N_max = 1,000, 20% to B, daily14 | 7.1 [6.3, 7.9] | 1.9 [1.5, 2.4] | 4/14 | no |
+| gbstats.seq.rel.tuned | bern_p10, N_max = 1,000, 50% to B, daily14 | 6.9 [6.2, 7.8] | 3.5 [3.0, 4.2] | 10/14 | no |
+| gbstats.seq.rel.tuned | pareto_a25, N_max = 1,000, 20% to B, overrun21 | 6.9 [6.1, 7.7] | 2.6 [2.1, 3.1] | 11/21 | no |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 1,000, 50% to B, overrun21 | 6.8 [6.0, 7.6] | 4.3 [3.7, 4.9] | 17/21 | no |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 20,000, 20% to B, overrun21 | 6.6 [5.9, 7.4] | 6.6 [5.9, 7.4] | 21/21 | **V** |
+| gbstats.seq.rel.tuned | pareto_a15, N_max = 1,000, 50% to B, daily14 | 6.3 [5.5, 7.1] | 3.7 [3.2, 4.4] | 10/14 | no |
+| gbstats.seq.rel.tuned | pareto_a25, N_max = 1,000, 20% to B, daily14 | 6.3 [5.5, 7.1] | 1.9 [1.5, 2.4] | 4/14 | no |
+| gbstats.seq.abs | pareto_a15, N_max = 20,000, 20% to B, stream140 | 6.0 [5.3, 6.8] | 5.9 [5.2, 6.7] | 135/140 | no |
+| spotify.gst | bern_p01, N_max = 1,000, 20% to B, daily14 | 21.4 [20.2, 22.8] | 17.1 [15.9, 18.3] | 4/14 | **V** |
+| spotify.gst | bern_p01, N_max = 1,000, 20% to B, stream140 | 20.4 [19.2, 21.7] | 16.4 [15.3, 17.6] | 36/140 | **V** |
+| spotify.gst | bern_p10, N_max = 1,000, 20% to B, stream140 | 20.4 [19.2, 21.7] | 4.6 [4.0, 5.3] | 36/140 | no |
+| spotify.gst | bern_p01, N_max = 1,000, 20% to B, fixed1 | 14.2 [13.2, 15.3] | 14.2 [13.2, 15.3] | 1/1 | **V** |
+| spotify.gst | pareto_a15, N_max = 1,000, 20% to B, stream140 | 10.4 [9.5, 11.4] | 6.5 [5.7, 7.3] | 36/140 | **V** |
+| spotify.gst | lognorm, N_max = 1,000, 20% to B, stream140 | 10.1 [9.2, 11.0] | 6.5 [5.7, 7.3] | 36/140 | **V** |
+| spotify.gst | lognorm, N_max = 1,000, 20% to B, daily14 | 9.8 [8.9, 10.8] | 6.4 [5.7, 7.2] | 4/14 | **V** |
+| spotify.gst | pareto_a15, N_max = 1,000, 20% to B, daily14 | 9.8 [8.9, 10.7] | 6.5 [5.8, 7.3] | 4/14 | **V** |
+| spotify.gst | bern_p10, N_max = 1,000, 20% to B, daily14 | 9.7 [8.8, 10.6] | 4.8 [4.1, 5.5] | 4/14 | no |
+| spotify.gst | pareto_a25, N_max = 1,000, 20% to B, stream140 | 9.1 [8.3, 10.1] | 5.9 [5.2, 6.7] | 36/140 | no |
+| spotify.gst | pareto_a15, N_max = 20,000, 20% to B, stream140 | 8.9 [8.0, 9.8] | 8.9 [8.0, 9.8] | 135/140 | **V** |
+| spotify.gst | pareto_a15, N_max = 20,000, 20% to B, daily14 | 8.9 [8.0, 9.8] | 8.9 [8.0, 9.8] | 14/14 | **V** |
+| spotify.gst | bern_p01, N_max = 20,000, 20% to B, stream140 | 8.8 [7.9, 9.7] | 8.8 [7.9, 9.7] | 135/140 | **V** |
+| spotify.gst | pareto_a25, N_max = 1,000, 20% to B, daily14 | 8.6 [7.7, 9.5] | 5.7 [5.0, 6.4] | 4/14 | no |
+| spotify.gst | pareto_a15, N_max = 1,000, 20% to B, fixed1 | 7.5 [6.7, 8.4] | 7.5 [6.7, 8.4] | 1/1 | **V** |
+| spotify.gst | bern_p01, N_max = 20,000, 20% to B, daily14 | 7.3 [6.6, 8.2] | 7.3 [6.6, 8.2] | 14/14 | **V** |
+| spotify.gst | lognorm, N_max = 1,000, 20% to B, fixed1 | 7.1 [6.3, 7.9] | 7.1 [6.3, 7.9] | 1/1 | **V** |
+| spotify.gst | lognorm, N_max = 20,000, 20% to B, daily14 | 7.0 [6.2, 7.8] | 7.0 [6.2, 7.8] | 14/14 | **V** |
+| spotify.gst | lognorm, N_max = 20,000, 20% to B, stream140 | 6.9 [6.1, 7.7] | 6.9 [6.1, 7.7] | 135/140 | **V** |
+| spotify.gst | normal, N_max = 1,000, 20% to B, stream140 | 6.6 [5.8, 7.4] | 4.1 [3.5, 4.8] | 36/140 | no |
+| spotify.gst | pareto_a15, N_max = 20,000, 20% to B, fixed1 | 6.6 [5.8, 7.4] | 6.6 [5.8, 7.4] | 1/1 | **V** |
+| spotify.gst | pareto_a25, N_max = 20,000, 20% to B, stream140 | 6.1 [5.4, 6.9] | 6.0 [5.3, 6.8] | 135/140 | no |
+| spotify.gst | pareto_a25, N_max = 1,000, 20% to B, fixed1 | 6.1 [5.4, 6.9] | 6.1 [5.4, 6.9] | 1/1 | no |
+| ref.msprt | bern_p10, N_max = 1,000, 20% to B, stream140 | 13.0 [12.0, 14.1] | 1.2 [0.9, 1.6] | 36/140 | no |
+| ref.msprt | bern_p01, N_max = 20,000, 20% to B, stream140 | 11.2 [10.2, 12.2] | 11.2 [10.2, 12.2] | 135/140 | **V** |
+| ref.msprt | ratio, N_max = 1,000, 20% to B, stream140 | 11.1 [10.1, 12.1] | 0.7 [0.5, 1.0] | 36/140 | no |
+| ref.msprt | pareto_a25, N_max = 1,000, 20% to B, stream140 | 10.5 [9.5, 11.5] | 1.5 [1.1, 1.9] | 36/140 | no |
+| ref.msprt | pareto_a15, N_max = 1,000, 20% to B, stream140 | 9.2 [8.3, 10.1] | 1.6 [1.2, 2.0] | 36/140 | no |
+| ref.msprt | bern_p10, N_max = 1,000, 20% to B, overrun21 | 8.1 [7.2, 9.0] | 1.3 [1.0, 1.7] | 11/21 | no |
+| ref.msprt | bern_p10, N_max = 1,000, 20% to B, daily14 | 7.8 [7.0, 8.7] | 1.1 [0.8, 1.4] | 4/14 | no |
+| ref.msprt | lognorm, N_max = 1,000, 20% to B, stream140 | 7.4 [6.6, 8.3] | 1.2 [0.9, 1.6] | 36/140 | no |
+| ref.msprt | bern_p01, N_max = 20,000, 20% to B, overrun21 | 6.4 [5.7, 7.2] | 6.4 [5.7, 7.2] | 21/21 | **V** |
+| ref.msprt | bern_p01, N_max = 1,000, 20% to B, overrun21 | 6.3 [5.6, 7.1] | 5.8 [5.1, 6.5] | 11/21 | no |
+| ref.msprt | bern_p01, N_max = 20,000, 20% to B, daily14 | 6.2 [5.5, 7.0] | 6.2 [5.5, 7.0] | 14/14 | **V** |
+| ref.acs | bern_p01, N_max = 1,000, 20% to B, overrun21 | 9.2 [8.3, 10.1] | 8.6 [7.7, 9.5] | 11/21 | **V** |
+| ref.acs | bern_p10, N_max = 1,000, 20% to B, stream140 | 7.5 [6.7, 8.3] | 1.3 [1.0, 1.7] | 36/140 | no |
+| ref.gst_obf | bern_p01, N_max = 1,000, 20% to B, daily14 | 20.3 [19.0, 21.6] | 17.5 [16.3, 18.7] | 4/14 | **V** |
+| ref.gst_obf | bern_p01, N_max = 1,000, 20% to B, stream140 | 20.2 [19.0, 21.5] | 18.1 [16.9, 19.3] | 36/140 | **V** |
+| ref.gst_obf | bern_p01, N_max = 1,000, 20% to B, fixed1 | 14.2 [13.2, 15.3] | 14.2 [13.2, 15.3] | 1/1 | **V** |
+| ref.gst_obf | lognorm, N_max = 1,000, 20% to B, stream140 | 8.6 [7.8, 9.6] | 7.3 [6.5, 8.2] | 36/140 | **V** |
+| ref.gst_obf | lognorm, N_max = 1,000, 20% to B, daily14 | 8.6 [7.7, 9.5] | 7.3 [6.5, 8.2] | 4/14 | **V** |
+| ref.gst_obf | pareto_a15, N_max = 1,000, 20% to B, stream140 | 8.5 [7.7, 9.4] | 7.0 [6.3, 7.9] | 36/140 | **V** |
+| ref.gst_obf | pareto_a15, N_max = 1,000, 20% to B, daily14 | 8.5 [7.6, 9.4] | 7.3 [6.5, 8.2] | 4/14 | **V** |
+| ref.gst_obf | pareto_a15, N_max = 20,000, 20% to B, daily14 | 7.9 [7.1, 8.8] | 7.9 [7.1, 8.8] | 14/14 | **V** |
+| ref.gst_obf | pareto_a25, N_max = 1,000, 20% to B, stream140 | 7.7 [6.9, 8.6] | 6.6 [5.8, 7.4] | 36/140 | **V** |
+| ref.gst_obf | pareto_a15, N_max = 20,000, 20% to B, stream140 | 7.6 [6.8, 8.5] | 7.6 [6.8, 8.5] | 135/140 | **V** |
+| ref.gst_obf | pareto_a15, N_max = 1,000, 20% to B, fixed1 | 7.5 [6.7, 8.4] | 7.5 [6.7, 8.4] | 1/1 | **V** |
+| ref.gst_obf | pareto_a25, N_max = 1,000, 20% to B, daily14 | 7.4 [6.7, 8.3] | 6.5 [5.8, 7.3] | 4/14 | **V** |
+| ref.gst_obf | lognorm, N_max = 1,000, 20% to B, fixed1 | 7.1 [6.3, 7.9] | 7.1 [6.3, 7.9] | 1/1 | **V** |
+| ref.gst_obf | pareto_a15, N_max = 20,000, 20% to B, fixed1 | 6.6 [5.8, 7.4] | 6.6 [5.8, 7.4] | 1/1 | **V** |
+| ref.gst_obf | bern_p10, N_max = 1,000, 20% to B, stream140 | 6.5 [5.8, 7.3] | 5.2 [4.6, 6.0] | 36/140 | no |
+| ref.gst_obf | lognorm, N_max = 20,000, 20% to B, daily14 | 6.4 [5.7, 7.2] | 6.4 [5.7, 7.2] | 14/14 | **V** |
+| ref.gst_obf | lognorm, N_max = 20,000, 20% to B, stream140 | 6.4 [5.7, 7.2] | 6.4 [5.7, 7.2] | 135/140 | **V** |
+
+## Limitations
+
+- **PyPI release, not the hosted code.** gbstats 0.8.0 on PyPI (2024-06-20) is older
+  than the code GrowthBook runs today, which still reports version 0.8.0 (for example,
+  post-stratification is now on by default). This audit covers the PyPI release only.
+- **Detection limit.** Per-cell excesses below about 6.02-6.20% FPR (primary
+  families, see above) can go undetected; 'consistent' is not proof of calibration.
+- **stream140 understates continuous monitoring.** stream140 looks 140 times up to
+  N_max. Looking after every observation can only add rejections, so the error under
+  truly continuous monitoring is at least as high as reported here for every method.
+- **Small arms drive many excesses.** Rejections at looks with a handful of users in
+  one arm account for most of several headline rates (see the sensitivity section).
+  They are real outputs of the engines on these inputs, not adapter errors (the
+  mirrors match the engines on them), but a product with a minimum sample size would
+  hide them.
+- **Single-look failures are not sequential failures.** A spotify.gst violation at
+  `fixed1` is the single z-test at N_max with few events or heavy skew in the small arm
+  (for example 1% conversions with 200 users in B); the findings list labels them
+  separately.
+- **Mirrors, verified on a subsample.** Engine rates come from vectorised mirrors,
+  compared with real engine calls on the first replicates of every unit and schedule
+  and on randomised grids (zero disagreements). The two identity gates are
+  self-consistency checks between code paths that share arithmetic, not independent
+  checks of engine correctness.
+- **Scope.** Product-layer behaviour (minimum sample sizes, data-quality checks) is not
+  audited. Results apply to the pinned engine versions and the simulated conditions.
+  Calibration findings describe statistical behaviour, not software defects.
 
 ## False-positive rate (A/A), % [95% CI]
 
@@ -1551,4 +1882,51 @@ the method's claim; no pass/fail). Unmarked claimed cells are consistent.
 ![fpr_n20000_b50.png](fpr_n20000_b50.png)
 ![fpr_n20000_b20.png](fpr_n20000_b20.png)
 ![power_vs_stopping_n.png](power_vs_stopping_n.png)
+
+## Deviations from the design (DESIGN.md section 13)
+
+- **Lognormal variance:** (e^{2.25} - 1) e^{2.25} = 80.53, not 80.6 (arithmetic slip in the
+  first draft of 3.1).
+- **Rounding:** arm counts and the fine grid use round-half-up (floor(x + 0.5)), not
+  Python's banker's rounding.
+- **mSPRT scale for `pareto_a15`:** it has no calibrated lift, so its tau borrows the relative
+  lift of `pareto_a25` at the same N_max and allocation, times its own mean.
+- **LD-OBF past N_max:** looks past N_max get bound +inf (no rejection, unbounded interval),
+  which is what capped spending implies.
+- **spotify alpha:** the engine computes alpha as 1 - interval_size = 0.050000000000000044;
+  the mirror uses the same value (bounds and decisions match bitwise).
+- **spotify.z in-loop verification:** one engine call per replicate on all looks of the
+  schedule, reading the unadjusted p-value and 95% CI per row. With one comparison per call
+  these equal the single-look call's decision and interval; a test checks this. The random
+  grid in `peekaudit verify` uses true single-look calls.
+- **Fixed-horizon calibration gate (5.3):** applied with "contains the nominal level" to the
+  fixed-horizon tests and the GSTs (whose single look at N_max uses 1.96); anytime-valid
+  methods are conservative at a single look by construction, so for them the gate is "99.9%
+  lower bound <= 0.05".
+- **Engine fixtures (5.2 item 1):** only the gbstats fixture already in the scaffold is
+  reproduced (through the mirror as well as the engine). The other gbstats sdist and
+  spotify repository fixtures are not yet copied (this requires downloading the sdist and
+  the repository). The randomised mirror-equals-engine grid and the in-loop checks are the
+  main evidence.
+- **`gbstats.seq.rel.guard150`:** dropped as an engine variant (4.3). The quantity GrowthBook
+  compares with its minimum sample size has not been confirmed from source. In its place,
+  `peekaudit sensitivity` recomputes each sequential method's FPR counting only rejections
+  at looks where both arms hold at least 150 units; the report shows it as a sensitivity
+  analysis, not as a model of the product.
+- **Full config:** k = 20 (stream140 spotify: 4), not 100, which would add about 10 CPU-hours
+  of spotify bound solving; the quick config keeps k = 10 / 2.
+- **Unit JSON:** wall time and provenance (git SHA, versions) are stored in a separate
+  `<unit>.timing.json` so that unit JSON is byte-identical across reruns and worker counts.
+- **Completeness rule (7):** a unit is complete when its JSON carries the study's config
+  hash, for `run`, `status` and `report` alike. The package version is recorded, not
+  matched. The config hash does not cover the code, so a resume after a code change keeps
+  older units: `run` and `status` warn, and the report lists every git SHA and version set.
+  The manifest keeps a history of starts.
+- **Identity gates (5.3):** the Bayes-vs-z and ACS-vs-gbstats-absolute identities compare
+  code paths that share arithmetic (the variance helper; `acs_pvalue_halfwidth`). They are
+  reported as mirror self-consistency checks. Engine correctness rests on the in-loop and
+  randomised-grid comparisons with the real engines.
+- **Report content (6.4):** the generated report carries the detection limit, the findings
+  list with Holm-adjusted p-values (split into sequential, single-look and coverage
+  findings), the limitations and this deviations list.
 

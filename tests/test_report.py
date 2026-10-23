@@ -68,7 +68,39 @@ def test_report_outputs(run_dir: Path, tmp_path: Path) -> None:
     assert len(data["cells"]) == len(summary["cells"]) > 0
     gates = {g["gate"]: g["pass"] for g in summary["gates"]}
     assert gates["engine in-loop agreement"] is True
-    assert gates["identity: bayes_vs_z10"] is True  # zero cells: trivially no mismatch
+    # Zero cells here: trivially no mismatch.
+    assert gates["mirror self-consistency: bayes_vs_z10"] is True
     assert gates["positive control: naive z daily14"] is None  # N_max 20,000 cell not run
     text = (tmp_path / "pub" / "REPORT.md").read_text(encoding="utf-8")
     assert "## Sanity gates" in text and "ref.acs" in text
+
+
+def test_report_states_limits_findings_and_deviations(run_dir: Path) -> None:
+    from peekaudit.report import detection_limits, findings
+
+    summary = report(run_dir)
+    text = (run_dir / "report" / "REPORT.md").read_text(encoding="utf-8")
+    for heading in (
+        "## Monte Carlo detection limit",
+        "## Findings (every violation)",
+        "## Limitations",
+        "## Deviations from the design",
+        "## Sensitivity: rejections only where both arms hold >= 150 units",
+    ):
+        assert heading in text
+    assert "PyPI" in text and "stream140 understates continuous monitoring" in text
+    assert "**Lognormal variance:**" in text  # DESIGN section 13 is copied in
+    rows = summary["cells"]
+    lim = detection_limits(rows)
+    assert lim and all(0.05 < d["critical_rate"] < 0.2 for d in lim)
+    fs = findings(rows)
+    for f in fs:
+        assert f["kind"] in ("sequential", "single look", "coverage")
+        assert (f["kind"] == "single look") == (
+            f["schedule"] == "fixed1" and f["kind"] != "coverage"
+        )
+    # The peeked naive z is claimed at fixed1 only, so its FPR findings are single-look ones.
+    assert all(f["kind"] != "sequential" for f in fs if f["method"] == "ref.naive_z")
+    aa = [r for r in rows if r["hypothesis"] == "aa"]
+    assert aa and all(0 <= r["rejections_small_arm"] <= r["rejections"] for r in aa)
+    assert all(r["rejections_first_look"] <= r["rejections"] for r in aa)

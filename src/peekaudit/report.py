@@ -19,10 +19,12 @@ from typing import Any
 import numpy as np
 from scipy import stats as st
 
+from peekaudit.conformance import FWER, critical_rate
 from peekaudit.gst import crossing_probability
 from peekaudit.methods.registry import METHOD_NAMES
-from peekaudit.runner import StudyConfig, unit_path
-from peekaudit.scenarios import ALPHA, METRICS
+from peekaudit.runner import StudyConfig, read_unit, unit_complete, unit_provenance
+from peekaudit.scenarios import ALPHA, METRICS, arm_counts
+from peekaudit.sensitivity import MIN_ARM, load_sensitivity
 from peekaudit.stats import binom_sf_test, clopper_pearson, holm
 
 #: Nominal fixed-look level of each method (Bayes ctw95 is a level-0.10 test, DESIGN 4.1).
@@ -46,15 +48,45 @@ def load_units(run_dir: str | Path) -> tuple[dict[str, Any], list[dict[str, Any]
     cfg = StudyConfig.from_dict(manifest["config"])
     units = []
     for u in cfg.unit_list():
-        p = unit_path(out, u.id)
-        if not p.exists():
-            continue
-        d = json.loads(p.read_text(encoding="utf-8"))
-        # The config hash fixes the results; the package version is recorded, not matched, so
-        # a version bump without code changes does not hide finished units from the report.
-        if d.get("config_hash") == cfg.hash():
+        d = read_unit(out, u.id)
+        # Same completeness rule as `run` and `status` (runner.unit_complete).
+        if d is not None and unit_complete(d, cfg):
             units.append(d)
     return manifest, units
+
+
+def provenance_groups(
+    run_dir: str | Path, manifest: dict[str, Any], units: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Distinct (git SHA, versions) sets of the loaded units, with their unit counts.
+
+    Units computed before per-unit provenance was recorded are attributed to the manifest
+    only when the run has exactly one recorded start (manifest history or progress log);
+    otherwise their provenance is reported as unknown.
+    """
+    out = Path(run_dir)
+    starts = manifest.get("starts")
+    if starts is None:
+        log = out / "progress.log"
+        text = log.read_text(encoding="utf-8") if log.exists() else ""
+        n_starts = text.count(" start study=")
+    else:
+        n_starts = len(starts)
+    groups: dict[str, dict[str, Any]] = {}
+    for u in units:
+        prov = unit_provenance(out, u["unit"])
+        source = "unit record"
+        if prov is None:
+            if n_starts == 1:
+                prov = {"git_sha": manifest.get("git_sha"), "versions": manifest.get("versions")}
+                source = "run manifest (single start)"
+            else:
+                prov = {"git_sha": "unknown", "versions": {}}
+                source = "not recorded"
+        key = json.dumps([prov.get("git_sha"), prov.get("versions"), source], sort_keys=True)
+        g = groups.setdefault(key, {**prov, "source": source, "units": 0})
+        g["units"] += 1
+    return list(groups.values())
 
 
 def _cp(k: int, n: int, conf: float = 0.95) -> list[float]:
@@ -96,6 +128,11 @@ def build_rows(units: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 }
                 if u["hypothesis"] == "aa":
                     row["p_fpr_gt_alpha"] = binom_sf_test(k, n, ALPHA)
+                    hist = c["first_rejection_hist"]
+                    n_a, n_b = arm_counts(np.asarray(u["totals"][sched]), u["pi"])
+                    small = np.minimum(n_a, n_b) < MIN_ARM
+                    row["rejections_first_look"] = int(hist[0])
+                    row["rejections_small_arm"] = int(np.asarray(hist)[small].sum())
                     if not c["claimed"]:
                         row["family"] = "informational"
                     elif metric.finite_variance:
@@ -148,6 +185,89 @@ def classify(rows: list[dict[str, Any]]) -> None:
                 r["verdict"] = "consistent"
     for r in rows:
         r.setdefault("verdict", "informational")
+
+
+def detection_limits(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Smallest FPR a cell can flag at the strictest Holm step, per (method, FPR family)."""
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for r in rows:
+        if r["family"] in ("fpr_primary", "fpr_stress") and "holm_m" in r:
+            groups[(r["method"], r["family"])].append(r)
+    out = []
+    for (method, fam), rs in sorted(groups.items(), key=lambda kv: (_order(kv[0][0]), kv[0][1])):
+        n, m = min(r["n"] for r in rs), rs[0]["holm_m"]
+        out.append({"method": method, "family": fam, "m": m, "n": n,
+                    "critical_rate": critical_rate(n, m, ALPHA, FWER)})  # fmt: skip
+    return out
+
+
+def findings(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every violation, most severe first within method, with its kind (DESIGN 6.4 item 5).
+
+    Kinds: "sequential" (FPR excess under repeated looks), "single look" (FPR excess of the
+    one analysis at N_max, so not a sequential failure), "coverage" (A/B interval misses).
+    """
+    viol = [r for r in rows if r["verdict"] == "violation"]
+    out = []
+    for r in viol:
+        if r["family"] == "coverage":
+            kind = "coverage"
+        elif r["schedule"] == "fixed1":
+            kind = "single look"
+        else:
+            kind = "sequential"
+        out.append({**r, "kind": kind})
+    kinds = ("sequential", "single look", "coverage")
+    out.sort(key=lambda r: (_order(r["method"]), kinds.index(r["kind"]), -r.get("rate", 0.0)))
+    return out
+
+
+def sensitivity_rows(
+    rows: list[dict[str, Any]], sens: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Guarded FPR per claimed A/A cell, Holm per (method, family) as in the main analysis."""
+    by_key = {(r["method"], r["unit"], r["schedule"]): r for r in rows if r["hypothesis"] == "aa"}
+    out = []
+    for unit in sens:
+        if not unit.get("matches_run"):
+            continue
+        for method, by_s in unit["cells"].items():
+            for sched, c in by_s.items():
+                r = by_key.get((method, unit["unit"], sched))
+                if r is None or r["family"] not in ("fpr_primary", "fpr_stress"):
+                    continue
+                k, n = c["rejections_guarded"], c["n"]
+                out.append({
+                    "method": method, "unit": unit["unit"], "metric": r["metric"],
+                    "n_max": r["n_max"], "pi": r["pi"], "schedule": sched, "family": r["family"],
+                    "min_arm": unit["min_arm"], "guarded_looks": c["guarded_looks"],
+                    "looks": c["looks"], "n": n, "rejections": c["rejections"], "rate": r["rate"],
+                    "rate_ci95": r["rate_ci95"], "verdict": r["verdict"],
+                    "rejections_guarded": k, "rate_guarded": k / n,
+                    "rate_guarded_ci95": _cp(k, n), "p_guarded": binom_sf_test(k, n, ALPHA),
+                })  # fmt: skip
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for r in out:
+        groups[(r["method"], r["family"])].append(r)
+    for rs in groups.values():
+        for r, a in zip(rs, holm([r["p_guarded"] for r in rs]), strict=True):
+            r["holm_p_guarded"] = float(a)
+            r["verdict_guarded"] = "violation" if a < FWER else "not flagged"
+    return out
+
+
+def design_deviations() -> list[str]:
+    """Bullet lines of DESIGN.md section 13 when the source tree is available."""
+    path = Path(__file__).resolve().parents[2] / "docs" / "DESIGN.md"
+    if not path.exists():
+        return []
+    text = path.read_text(encoding="utf-8")
+    start = text.find("## 13.")
+    if start < 0:
+        return []
+    end = text.find("\n## ", start + 1)
+    body = text[start : end if end > 0 else None].splitlines()[1:]
+    return [ln for ln in body if ln.strip()]
 
 
 # ---------------------------------------------------------------------------------- gates
@@ -227,12 +347,19 @@ def gates(rows: list[dict[str, Any]], units: list[dict[str, Any]]) -> list[dict[
             lo, hi = clopper_pearson(r["reject_pos"], r["n"], GATE_CONF)
             add(f"power calibration: naive z fixed1 {metric} pi={pi}", lo <= 0.80 <= hi,
                 f"power {r['power']:.4f}, 99.9% CI [{lo:.4f}, {hi:.4f}] vs 0.80")  # fmt: skip
-    for key in ("bayes_vs_z10", "acs_vs_gbstats_abs_nmax"):
+    # These compare two code paths that share arithmetic (the Bayes mirror and a z built from
+    # the same variance helper; ref.acs and the gbstats mirror share acs_pvalue_halfwidth),
+    # so they check self-consistency, not engine correctness. Engine correctness rests on
+    # the in-loop and randomised-grid comparisons with the real engines.
+    for key, what in (
+        ("bayes_vs_z10", "Bayes mirror vs z at level 0.10, same variance helper"),
+        ("acs_vs_gbstats_abs_nmax", "ref.acs vs gbstats absolute mirror, shared CS formula"),
+    ):
         cells = sum(u["identities"][key]["cells"] for u in units)
         mism = sum(u["identities"][key]["mismatches"] for u in units)
         ties = sum(u["identities"][key]["ties"] for u in units)
-        add(f"identity: {key}", mism == 0,
-            f"{mism} mismatches, {ties} ties in {cells:,} replicate-looks")  # fmt: skip
+        add(f"mirror self-consistency: {key}", mism == 0,
+            f"{what}: {mism} mismatches, {ties} ties in {cells:,} replicate-looks")  # fmt: skip
     bad = [u["unit"] for u in units if not u["verified_ok"]]
     add("engine in-loop agreement", not bad, "all units agree" if not bad else ", ".join(bad))
     return out
@@ -321,6 +448,9 @@ def write_report(
     units: list[dict[str, Any]],
     dest: Path,
     figures: list[str],
+    provenance: list[dict[str, Any]] | None = None,
+    sens_rows: list[dict[str, Any]] | None = None,
+    cpu_minutes: float | None = None,
 ) -> None:
     labels: dict[str, str] = {}
     for u in units:
@@ -348,8 +478,23 @@ def write_report(
         + ".",
         f"- Engine verification: first {cfg['k_verify']} replicates per unit and schedule "
         f"(spotify.gst on stream140: {cfg['k_verify_slow']}), real engine called look by look.",
-        f"- Code: git `{manifest['git_sha']}`; started {manifest.get('first_started')}.",
-        "- Versions: " + ", ".join(f"{k} {v}" for k, v in manifest["versions"].items()) + ".",
+        f"- Started {manifest.get('first_started')}; "
+        f"{len(manifest.get('starts') or [None])} recorded start(s)"
+        + (f"; {cpu_minutes:.1f} CPU-minutes over finished units." if cpu_minutes else "."),
+    ]
+    for g in provenance or [
+        {"git_sha": manifest.get("git_sha"), "versions": manifest.get("versions") or {},
+         "source": "run manifest", "units": len(units)}
+    ]:  # fmt: skip
+        vers = ", ".join(f"{k} {v}" for k, v in (g["versions"] or {}).items())
+        lines.append(
+            f"- Code: git `{g['git_sha']}` for {g['units']} units (source: {g['source']}); "
+            f"versions: {vers or 'not recorded'}."
+        )
+    if provenance and len(provenance) > 1:
+        lines.append("- **Units come from more than one code version or environment.**")
+    lines += [
+        "- Deviations from the design: see the last section of this report.",
         "",
         "## Sanity gates (DESIGN 5.3, 99.9% intervals)",
         "",
@@ -385,6 +530,10 @@ def write_report(
                 c[r["verdict"]] += 1
             lines.append(f"| {m} | {fam} | {len(rs)} | {c['violation']} | {c['consistent']} | "
                          f"{c['conservative']} |")  # fmt: skip
+    lines += _detection_section(rows)
+    lines += _findings_section(rows)
+    lines += _small_arm_section(sens_rows or [])
+    lines += _limitations_section(rows)
     lines += ["", "## False-positive rate (A/A), % [95% CI]", ""]
     for m in methods:
         lines += [f"### {m}: {labels.get(m, '')}", ""] + fpr_table(rows, m) + [""]
@@ -393,7 +542,159 @@ def write_report(
         lines += [f"### {m}", ""] + ab_table(rows, m) + [""]
     if figures:
         lines += ["## Figures", ""] + [f"![{f}]({f})" for f in figures] + [""]
+    dev = design_deviations()
+    lines += ["## Deviations from the design (DESIGN.md section 13)", ""]
+    lines += dev or ["See docs/DESIGN.md, section 13, in the source repository."]
+    lines += [""]
     dest.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _cell_label(r: dict[str, Any]) -> str:
+    return (f"{r['metric']}, N_max = {r['n_max']:,}, {int(r['pi'] * 100)}% to B, "
+            f"{r['schedule']}")  # fmt: skip
+
+
+def _detection_section(rows: list[dict[str, Any]]) -> list[str]:
+    lim = detection_limits(rows)
+    lines = [
+        "",
+        "## Monte Carlo detection limit",
+        "",
+        "A cell is flagged when the one-sided exact binomial test of FPR <= 5% rejects after",
+        f"Holm adjustment at family-wise level {FWER} within the method's family. The table",
+        "gives the smallest observed FPR that can be flagged at the strictest Holm step (m",
+        "cells). Smaller excesses can go undetected, so 'consistent' means 'no excess",
+        "detected at this size', not 'calibrated'.",
+        "",
+        "| method | family | cells m | replicates | smallest flaggable FPR % |",
+        "|---|---|---|---|---|",
+    ]
+    lines += [f"| {d['method']} | {d['family']} | {d['m']} | {d['n']:,} | "
+              f"{100 * d['critical_rate']:.2f} |" for d in lim]  # fmt: skip
+    return lines
+
+
+def _findings_section(rows: list[dict[str, Any]]) -> list[str]:
+    fs = findings(rows)
+    lines = [
+        "",
+        "## Findings (every violation)",
+        "",
+        "Kinds: 'sequential' = FPR excess under repeated looks; 'single look' = excess of the",
+        "one analysis at N_max (the single z-test failing with few events or heavy skew in",
+        "a small arm, not a sequential failure); 'coverage' = the interval at stopping",
+        "misses the true effect more than 5% of the time. For A/A cells, 'first look' and",
+        f"'arm < {MIN_ARM}' give the share of false",
+        "positives whose first rejection came at the first look, or at a look where the",
+        f"smaller arm held fewer than {MIN_ARM} units.",
+        "",
+    ]
+    if not fs:
+        return lines + ["No violations."]
+    for r in fs:
+        if r["kind"] == "coverage":
+            lines.append(
+                f"- {r['method']} (coverage): {_pct(r['coverage'])}% "
+                f"{_ci(r['coverage_ci95'])} on {_cell_label(r)} "
+                f"(Holm-adjusted p = {r['holm_p']:.2g}, m = {r['holm_m']})."
+            )
+            continue
+        k = max(r["rejections"], 1)
+        stress = ", stress" if r["family"] == "fpr_stress" else ""
+        lines.append(
+            f"- {r['method']} ({r['kind']}{stress}): FPR {_pct(r['rate'])}% "
+            f"{_ci(r['rate_ci95'])} on {_cell_label(r)} "
+            f"(Holm-adjusted p = {r['holm_p']:.2g}, m = {r['holm_m']}); first look "
+            f"{100 * r['rejections_first_look'] / k:.0f}%, arm < {MIN_ARM} "
+            f"{100 * r['rejections_small_arm'] / k:.0f}%."
+        )
+    return lines
+
+
+def _small_arm_section(sens_rows: list[dict[str, Any]]) -> list[str]:
+    lines = [
+        "",
+        f"## Sensitivity: rejections only where both arms hold >= {MIN_ARM} units",
+        "",
+        "Many excesses arise at the first looks of small experiments. With 20% of traffic to",
+        "B and N_max = 1,000, the first stream140 look has 6 users in A and 1 in B. A zero-",
+        "variance arm gives a standard error of 0, or a z-statistic rests on a few",
+        "observations, and the engine reports significance on 1 to 30 users in B. The engines",
+        "apply no minimum; GrowthBook's product layer hides results below a minimum sample",
+        "size of 150 (not part of the audited library). The rows below recompute FPR counting",
+        f"only rejections at looks where both arms hold at least {MIN_ARM} units (same data,",
+        "same analysis, earlier results ignored), Holm-adjusted per method and family as in",
+        "the main analysis. This is a sensitivity analysis, not a claim about any product.",
+        "",
+    ]
+    if not sens_rows:
+        return lines + ["Not computed for this run (`peekaudit sensitivity RUN_DIR` adds it)."]
+    lines += [
+        "| method | claimed A/A cells (primary + stress) | flagged (all looks) | "
+        f"flagged (arms >= {MIN_ARM}) |",
+        "|---|---|---|---|",
+    ]
+    by_m: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in sens_rows:
+        by_m[r["method"]].append(r)
+    for m in sorted(by_m, key=_order):
+        rs = by_m[m]
+        lines.append(
+            f"| {m} | {len(rs)} | {sum(r['verdict'] == 'violation' for r in rs)} | "
+            f"{sum(r['verdict_guarded'] == 'violation' for r in rs)} |"
+        )
+    lines += [
+        "",
+        "Cells flagged in the main analysis:",
+        "",
+        "| method | cell | FPR % all looks | FPR % arms >= 150 | looks kept | flagged |",
+        "|---|---|---|---|---|---|",
+    ]
+    flagged = [r for r in sens_rows if r["verdict"] == "violation"]
+    flagged.sort(key=lambda r: (_order(r["method"]), -r["rate"]))
+    for r in flagged:
+        lines.append(
+            f"| {r['method']} | {_cell_label(r)} | {_pct(r['rate'])} {_ci(r['rate_ci95'])} | "
+            f"{_pct(r['rate_guarded'])} {_ci(r['rate_guarded_ci95'])} | "
+            f"{r['guarded_looks']}/{r['looks']} | "
+            f"{'**V**' if r['verdict_guarded'] == 'violation' else 'no'} |"
+        )
+    return lines
+
+
+def _limitations_section(rows: list[dict[str, Any]]) -> list[str]:
+    lim = [d["critical_rate"] for d in detection_limits(rows) if d["family"] == "fpr_primary"]
+    lim_txt = f"{100 * min(lim):.2f}-{100 * max(lim):.2f}%" if lim else "n/a"
+    return [
+        "",
+        "## Limitations",
+        "",
+        "- **PyPI release, not the hosted code.** gbstats 0.8.0 on PyPI (2024-06-20) is older",
+        "  than the code GrowthBook runs today, which still reports version 0.8.0 (for example,",
+        "  post-stratification is now on by default). This audit covers the PyPI release only.",
+        f"- **Detection limit.** Per-cell excesses below about {lim_txt} FPR (primary",
+        "  families, see above) can go undetected; 'consistent' is not proof of calibration.",
+        "- **stream140 understates continuous monitoring.** stream140 looks 140 times up to",
+        "  N_max. Looking after every observation can only add rejections, so the error under",
+        "  truly continuous monitoring is at least as high as reported here for every method.",
+        "- **Small arms drive many excesses.** Rejections at looks with a handful of users in",
+        "  one arm account for most of several headline rates (see the sensitivity section).",
+        "  They are real outputs of the engines on these inputs, not adapter errors (the",
+        "  mirrors match the engines on them), but a product with a minimum sample size would",
+        "  hide them.",
+        "- **Single-look failures are not sequential failures.** A spotify.gst violation at",
+        "  `fixed1` is the single z-test at N_max with few events or heavy skew in the small arm",
+        "  (for example 1% conversions with 200 users in B); the findings list labels them",
+        "  separately.",
+        "- **Mirrors, verified on a subsample.** Engine rates come from vectorised mirrors,",
+        "  compared with real engine calls on the first replicates of every unit and schedule",
+        "  and on randomised grids (zero disagreements). The two identity gates are",
+        "  self-consistency checks between code paths that share arithmetic, not independent",
+        "  checks of engine correctness.",
+        "- **Scope.** Product-layer behaviour (minimum sample sizes, data-quality checks) is not",
+        "  audited. Results apply to the pinned engine versions and the simulated conditions.",
+        "  Calibration findings describe statistical behaviour, not software defects.",
+    ]
 
 
 def make_figures(rows: list[dict[str, Any]], dest: Path) -> list[str]:
@@ -504,9 +805,19 @@ def report(run_dir: str | Path, publish: str | Path | None = None) -> dict[str, 
         ],
         "cells": rows,
     }
+    provenance = provenance_groups(run_dir, manifest, units)
+    sens = sensitivity_rows(rows, load_sensitivity(run_dir))
+    summary["provenance"] = provenance
+    summary["sensitivity_min_arm"] = sens
     (dest / "summary.json").write_text(json.dumps(summary, separators=(",", ":"), default=float),
                                        encoding="utf-8")  # fmt: skip
-    write_report(manifest, rows, gate_list, units, dest / "REPORT.md", figures)
+    cpu = 0.0
+    for u in units:
+        t = Path(run_dir) / "units" / f"{u['unit']}.timing.json"
+        if t.exists():
+            cpu += json.loads(t.read_text(encoding="utf-8")).get("seconds", 0.0) / 60
+    write_report(manifest, rows, gate_list, units, dest / "REPORT.md", figures,
+                 provenance, sens, cpu or None)  # fmt: skip
     if publish:
         pub = Path(publish)
         pub.mkdir(parents=True, exist_ok=True)

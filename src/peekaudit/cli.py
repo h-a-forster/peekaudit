@@ -63,6 +63,13 @@ def _cmd_status(args: argparse.Namespace) -> int:
         f"study {st['study']} (config {st['config_hash']}): {st['done']}/{st['total']} units done"
     )
     print(f"CPU time of finished units: {st['cpu_minutes_done']} min")
+    shas = st["units_by_git_sha"]
+    if shas and (len(shas) > 1 or st["current_git_sha"] not in shas):
+        print(
+            "finished units by code version (a resume keeps them; --force recomputes): "
+            + ", ".join(f"{sha} x{n}" for sha, n in shas.items())
+            + f"; current code {st['current_git_sha']}"
+        )
     if st["failed"]:
         print("failed: " + ", ".join(st["failed"]))
     if st["unverified"]:
@@ -111,6 +118,16 @@ def _cmd_report(args: argparse.Namespace) -> int:
     for g in failed:
         print(f"  gate FAILED: {g}")
     return 1 if failed else 0
+
+
+def _cmd_sensitivity(args: argparse.Namespace) -> int:
+    from peekaudit.sensitivity import load_sensitivity, run_sensitivity
+
+    run_sensitivity(args.run_dir, min_arm=args.min_arm, workers=args.workers)
+    bad = [r["unit"] for r in load_sensitivity(args.run_dir, args.min_arm) if not r["matches_run"]]
+    if bad:
+        print("unguarded counts differ from the run (not used by the report): " + ", ".join(bad))
+    return 1 if bad else 0
 
 
 def _cmd_conform(args: argparse.Namespace) -> int:
@@ -166,6 +183,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report.add_argument("run_dir")
     p_report.add_argument("--publish", help="also copy the results here (e.g. docs/results/quick)")
     p_report.set_defaults(func=_cmd_report)
+
+    p_sens = sub.add_parser(
+        "sensitivity", help="FPR counting only looks where both arms reach a minimum size"
+    )
+    p_sens.add_argument("run_dir")
+    p_sens.add_argument("--min-arm", type=int, default=150, help="minimum units per arm")
+    p_sens.add_argument("--workers", type=int, help="worker processes (capped at 4)")
+    p_sens.set_defaults(func=_cmd_sensitivity)
 
     p_conform = sub.add_parser("conform", help="conformance battery for one method")
     p_conform.add_argument("--method", required=True, help="registry name or module:factory")

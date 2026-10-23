@@ -5,6 +5,41 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Added
+
+- `peekaudit sensitivity` (`peekaudit.sensitivity`): recomputes each sequential method's
+  A/A false-positive rate counting only rejections at looks where both arms hold at least
+  150 units. Checkpointed per unit; the regenerated unguarded counts must equal the run's.
+- The generated report now carries the Monte Carlo detection limit per method and family,
+  a findings list with Holm-adjusted p-values (sequential, single-look and coverage findings
+  separated, with the share of false positives at the first look and at small-arm looks),
+  the min-arm sensitivity, a limitations section and the design deviations.
+- Per-unit provenance (git SHA, versions) in `units/<unit>.timing.json`; the manifest keeps
+  a history of starts; the report lists every distinct code version it finds.
+- `StudyConfig` validation (counts, methods, schedules, unit ids, unknown or missing keys),
+  run before anything is written to the output folder.
+
+### Changed
+
+- One completeness rule for `run`, `status` and `report`: same config hash. The package
+  version is recorded, not matched, so `status` no longer reports a finished run as 0 done
+  after a version bump. `run` and `status` warn when finished units come from other code.
+- The two identity gates are reported as mirror self-consistency checks (they compare code
+  paths that share arithmetic).
+- README results: states the small-arm mechanism, separates single-look from sequential
+  failures, adds the stress-family results, and corrects the overrun maximum (8.2%) and the
+  peeking figures (40% at N = 20,000; 46% at N = 1,000).
+- DESIGN 5.4 and `scripts/reference_values.py` use m = 96 primary cells (critical FPR 6.20%
+  at R = 4,000).
+
+### Fixed
+
+- `critical_rate` / `ConformanceReport.detection_limit` used the method's alpha as the
+  family-wise level; the Holm level is now a separate `fwer` (default 0.05), also used for
+  the violation rule.
+- `scripts/run_study.py` no longer writes the interpreter's absolute path to the progress
+  log; the published `docs/results/quick/progress.log` is scrubbed.
+
 ## 0.1.0 - 2026-10-23
 
 First complete version: simulation engine, engine adapters, reference methods, checkpointed

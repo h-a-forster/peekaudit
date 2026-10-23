@@ -22,6 +22,11 @@ from peekaudit.scenarios import ALPHA, METRICS, SCHEDULES, Unit
 from peekaudit.simulate import generate
 from peekaudit.stats import binom_sf_test, clopper_pearson, holm
 
+#: Family-wise error rate of the Holm-adjusted violation test (DESIGN 6.2). It is a property
+#: of the audit, not of the method: ``alpha`` is the FPR a method promises (the null rate of
+#: the binomial test), ``FWER`` the level at which an excess over it is declared.
+FWER = 0.05
+
 
 @dataclass(frozen=True)
 class Battery:
@@ -73,6 +78,7 @@ class ConformanceReport:
     battery: str
     alpha: float
     cells: list[ConformanceCell] = field(default_factory=list)
+    fwer: float = FWER
 
     @property
     def violations(self) -> list[ConformanceCell]:
@@ -87,13 +93,14 @@ class ConformanceReport:
         """Smallest FPR that would be flagged in a cell at the strictest Holm level."""
         if not self.cells:
             return float("nan")
-        return critical_rate(self.cells[0].n, len(self.cells), self.alpha)
+        return critical_rate(self.cells[0].n, len(self.cells), self.alpha, self.fwer)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "method": self.method,
             "battery": self.battery,
             "alpha": self.alpha,
+            "fwer": self.fwer,
             "passed": self.passed,
             "detection_limit": self.detection_limit,
             "cells": [asdict(c) for c in self.cells],
@@ -116,9 +123,10 @@ class ConformanceReport:
         return "\n".join(lines)
 
 
-def critical_rate(reps: int, m: int, alpha: float = ALPHA) -> float:
-    """Smallest k/reps rejected by the exact one-sided test at level alpha/m."""
-    level = alpha / max(m, 1)
+def critical_rate(reps: int, m: int, alpha: float = ALPHA, fwer: float = FWER) -> float:
+    """Smallest k/reps that the exact one-sided test of H0: FPR <= alpha rejects at level
+    fwer/m (the strictest Holm step over m cells)."""
+    level = fwer / max(m, 1)
     k = int(binom.isf(level, reps, alpha))
     while binom.sf(k - 1, reps, alpha) > level:
         k += 1
@@ -128,9 +136,13 @@ def critical_rate(reps: int, m: int, alpha: float = ALPHA) -> float:
 
 
 def check_conformance(
-    method: Method, battery: str | Battery = "quick", alpha: float = ALPHA
+    method: Method, battery: str | Battery = "quick", alpha: float = ALPHA, fwer: float = FWER
 ) -> ConformanceReport:
-    """Simulate the battery's A/A units and test FPR <= alpha in every claimed cell."""
+    """Simulate the battery's A/A units and test FPR <= alpha in every claimed cell.
+
+    ``alpha`` is the false-positive rate the method promises; ``fwer`` is the family-wise
+    level of the Holm-adjusted violation test across cells.
+    """
     bat = BATTERIES[battery] if isinstance(battery, str) else battery
     schedules = [s for s in bat.schedules if method.claims(s)]
     if not schedules:
@@ -138,7 +150,7 @@ def check_conformance(
             f"{method.name} claims none of the battery's schedules {bat.schedules}"
             f" (claim: {method.claim!r})"
         )
-    rep = ConformanceReport(method.name, bat.name, alpha)
+    rep = ConformanceReport(method.name, bat.name, alpha, fwer=fwer)
     for metric_id in bat.metrics:
         metric = METRICS[metric_id]
         if not method.supports(metric):
@@ -166,12 +178,14 @@ def check_conformance(
         adj = holm([c.p_value for c in rep.cells])
         for c, a in zip(rep.cells, adj, strict=True):
             c.holm_p = float(a)
-            c.violation = bool(a < 0.05)
+            c.violation = bool(a < fwer)
     return rep
 
 
-def assert_conforms(method: Method, battery: str | Battery = "smoke", alpha: float = ALPHA) -> None:
+def assert_conforms(
+    method: Method, battery: str | Battery = "smoke", alpha: float = ALPHA, fwer: float = FWER
+) -> None:
     """Raise AssertionError listing the violating cells if the method fails the battery."""
-    rep = check_conformance(method, battery, alpha)
+    rep = check_conformance(method, battery, alpha, fwer)
     if not rep.passed:
         raise AssertionError(rep.summary())

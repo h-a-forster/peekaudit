@@ -173,8 +173,10 @@ ones.
 - Estimate for the quick study with 4 workers: data generation ~3 CPU-min, vectorised
   evaluation ~5 CPU-min, engine verification ~35-45 CPU-min, about 15-20 min wall in
   total, within the 45-minute target. M5 measures a one-unit pilot first and adjusts k
-  (not R) if the projection exceeds 45 minutes. Full study: estimate 3-5 h wall. Confirm
-  with the pilot projection before launching.
+  (not R) if the projection exceeds 45 minutes. Measured: the quick study took 200.6
+  CPU-min (50.3 min wall on 4 workers, machine shared with other jobs), dominated by engine
+  verification. Full study (R x 5, k x 2): projected about 2.5-3 h wall on 4 idle workers,
+  more on a loaded machine. Confirm with a pilot projection before launching.
 
 ## 4. Methods: exact specifications
 
@@ -333,12 +335,14 @@ Known mathematical relations, used as oracles:
 ### 5.4 Monte Carlo size and power
 
 FPR violation test: one-sided exact binomial test of H0 FPR <= 0.05, Holm across the
-m <= 84 primary A/A cells of a method. Critical rate and power (computed exactly):
+m <= 96 primary A/A cells of a method (an anytime method: 6 finite-variance metrics x 2 N_max
+x 2 allocations x 4 schedules; GSTs have 72, fixed-horizon tests 24). Critical rate and
+power at the strictest Holm step (computed exactly):
 
 | R | Holm level | critical FPR | power at 6.0% | 6.5% | 7.0% | 8.0% |
 |---|---|---|---|---|---|---|
-| 4,000 (quick) | 0.05/84 | 6.17% | 0.33 | 0.81 | 0.98 | 1.00 |
-| 20,000 (full) | 0.05/84 | 5.51% | 0.998 | 1.00 | 1.00 | 1.00 |
+| 4,000 (quick) | 0.05/96 | 6.20% | 0.31 | 0.79 | 0.98 | 1.00 |
+| 20,000 (full) | 0.05/96 | 5.52% | 0.998 | 1.00 | 1.00 | 1.00 |
 
 95% CP half-widths: about +/-0.7 pp at 5% (R = 4,000), +/-0.3 pp (R = 20,000), and
 +/-1.8 pp at 80% power (R_AB = 2,000). The quick study can reliably flag inflation to 7%
@@ -395,12 +399,13 @@ recomputed), and `REPORT.md` with:
 ## 7. Runner, checkpointing, logging
 
 - Output root `runs/<study>/` (gitignored): `manifest.json` (config, config hash, versions,
-  git SHA, start time), `units/<unit_id>.json` (aggregates; written to a temp file, then
+  git SHA, start time, and a history of every start), `units/<unit_id>.json` (aggregates; written to a temp file, then
   `os.replace`), `cache/<unit_id>.npz` (per-replicate stop look, sign and interval at stop,
   for debugging and re-analysis), and `progress.log`. The log has one line per finished
   unit: done/total, elapsed, rate, ETA.
-- Resume: a unit is skipped if its JSON exists with a matching config hash and peekaudit
-  version. `--force` recomputes. Units are independent, so a crash loses at most one unit
+- Resume: a unit is skipped if its JSON exists with a matching config hash (the package
+  version and git SHA are recorded per unit as provenance; see section 13). `--force`
+  recomputes. Units are independent, so a crash loses at most one unit
   per worker.
 - Pool: `concurrent.futures.ProcessPoolExecutor(max_workers=min(4, os.cpu_count()))`, with
   the cap enforced in code. BLAS threads are pinned to 1 per worker (`OMP_NUM_THREADS`,
@@ -511,15 +516,31 @@ Cut or deferred, with reasons:
   methods are conservative at a single look by construction, so for them the gate is "99.9%
   lower bound <= 0.05".
 - **Engine fixtures (5.2 item 1):** only the gbstats fixture already in the scaffold is
-  reproduced (through the mirror as well as the engine). Copying the other gbstats sdist
-  and spotify repository fixtures needs a download that was not done in this session.
-  The randomised mirror-equals-engine grid and the in-loop checks are the main evidence.
-- **`gbstats.seq.rel.guard150`:** dropped (4.3). The quantity GrowthBook compares with its
-  minimum sample size could not be confirmed from source in this session.
+  reproduced (through the mirror as well as the engine). The other gbstats sdist and
+  spotify repository fixtures are not yet copied (this requires downloading the sdist and
+  the repository). The randomised mirror-equals-engine grid and the in-loop checks are the
+  main evidence.
+- **`gbstats.seq.rel.guard150`:** dropped as an engine variant (4.3). The quantity GrowthBook
+  compares with its minimum sample size has not been confirmed from source. In its place,
+  `peekaudit sensitivity` recomputes each sequential method's FPR counting only rejections
+  at looks where both arms hold at least 150 units; the report shows it as a sensitivity
+  analysis, not as a model of the product.
 - **Full config:** k = 20 (stream140 spotify: 4), not 100, which would add about 10 CPU-hours
   of spotify bound solving; the quick config keeps k = 10 / 2.
-- **Unit JSON:** wall time is stored in a separate `<unit>.timing.json` so that unit JSON is
-  byte-identical across reruns and worker counts.
+- **Unit JSON:** wall time and provenance (git SHA, versions) are stored in a separate
+  `<unit>.timing.json` so that unit JSON is byte-identical across reruns and worker counts.
+- **Completeness rule (7):** a unit is complete when its JSON carries the study's config
+  hash, for `run`, `status` and `report` alike. The package version is recorded, not
+  matched. The config hash does not cover the code, so a resume after a code change keeps
+  older units: `run` and `status` warn, and the report lists every git SHA and version set.
+  The manifest keeps a history of starts.
+- **Identity gates (5.3):** the Bayes-vs-z and ACS-vs-gbstats-absolute identities compare
+  code paths that share arithmetic (the variance helper; `acs_pvalue_halfwidth`). They are
+  reported as mirror self-consistency checks. Engine correctness rests on the in-loop and
+  randomised-grid comparisons with the real engines.
+- **Report content (6.4):** the generated report carries the detection limit, the findings
+  list with Holm-adjusted p-values (split into sequential, single-look and coverage
+  findings), the limitations and this deviations list.
 
 ## 14. References
 
