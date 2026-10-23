@@ -1,7 +1,7 @@
 # peekaudit design
 
-Status: v0.1 design, written before implementation. Implemented so far: `peekaudit.stats`,
-`peekaudit.gst` and the CLI `versions` command (see "Milestones").
+Status: v0.1, implemented. The design was written before implementation; every deviation
+made while implementing it is listed in section 13.
 
 ## 1. Question and claims under test
 
@@ -490,7 +490,38 @@ Cut or deferred, with reasons:
 | M7 | `conformance.py` + `peekaudit conform`, smoke battery in CI | `ref.gst_obf` and `ref.acs` pass the smoke battery; `ref.naive_z` claimed for all schedules fails it (positive control); runs in < 30 s |
 | M8 | README findings, CHANGELOG 0.1.0, handoff | every number in README traceable to summary.json; findings phrased per section 6.4; limitations listed |
 
-## 13. References
+## 13. Deviations recorded during implementation (v0.1)
+
+- **Lognormal variance:** (e^{2.25} - 1) e^{2.25} = 80.53, not 80.6 (arithmetic slip in the
+  first draft of 3.1).
+- **Rounding:** arm counts and the fine grid use round-half-up (floor(x + 0.5)), not
+  Python's banker's rounding.
+- **mSPRT scale for `pareto_a15`:** it has no calibrated lift, so its tau borrows the relative
+  lift of `pareto_a25` at the same N_max and allocation, times its own mean.
+- **LD-OBF past N_max:** looks past N_max get bound +inf (no rejection, unbounded interval),
+  which is what capped spending implies.
+- **spotify alpha:** the engine computes alpha as 1 - interval_size = 0.050000000000000044;
+  the mirror uses the same value (bounds and decisions match bitwise).
+- **spotify.z in-loop verification:** one engine call per replicate on all looks of the
+  schedule, reading the unadjusted p-value and 95% CI per row. With one comparison per call
+  these equal the single-look call's decision and interval; a test checks this. The random
+  grid in `peekaudit verify` uses true single-look calls.
+- **Fixed-horizon calibration gate (5.3):** applied with "contains the nominal level" to the
+  fixed-horizon tests and the GSTs (whose single look at N_max uses 1.96); anytime-valid
+  methods are conservative at a single look by construction, so for them the gate is "99.9%
+  lower bound <= 0.05".
+- **Engine fixtures (5.2 item 1):** only the gbstats fixture already in the scaffold is
+  reproduced (through the mirror as well as the engine). Copying the other gbstats sdist
+  and spotify repository fixtures needs a download that was not done in this session.
+  The randomised mirror-equals-engine grid and the in-loop checks are the main evidence.
+- **`gbstats.seq.rel.guard150`:** dropped (4.3). The quantity GrowthBook compares with its
+  minimum sample size could not be confirmed from source in this session.
+- **Full config:** k = 20 (stream140 spotify: 4), not 100, which would add about 10 CPU-hours
+  of spotify bound solving; the quick config keeps k = 10 / 2.
+- **Unit JSON:** wall time is stored in a separate `<unit>.timing.json` so that unit JSON is
+  byte-identical across reruns and worker counts.
+
+## 14. References
 
 - Armitage, P., McPherson, C. K. and Rowe, B. C. (1969). Repeated significance tests on
   accumulating data. JRSS A 132(2), 235-244.

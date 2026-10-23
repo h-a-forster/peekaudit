@@ -43,11 +43,11 @@ conformance check.
 | `src/peekaudit/cli.py` | `run`, `status`, `report`, `verify`, `conform`, `versions` | done |
 | `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | done |
 | `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
-| `src/peekaudit/methods/base.py` | `LookStats`, `MethodOutput`, `Method` protocol, `ScalarMethod` | M2 |
-| `src/peekaudit/methods/reference.py` | naive z, mSPRT, ACS, GST-OBF | M2 |
+| `src/peekaudit/methods/base.py` | `MethodOutput`, `EvalContext`, `Method`, `ScalarMethod`, stopping rule | done |
+| `src/peekaudit/methods/reference.py` | naive z, mSPRT, ACS, GST-OBF | done |
 | `src/peekaudit/methods/gbstats_adapter.py` | gbstats engine calls + vectorised mirror | done |
 | `src/peekaudit/methods/spotify_adapter.py` | spotify-confidence engine calls + mirror | done |
-| `src/peekaudit/methods/registry.py` | method names -> factories | M2 |
+| `src/peekaudit/methods/registry.py` | method names -> factories | done |
 | `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | done |
 | `src/peekaudit/runner.py` | units, process pool, checkpoints, progress log | done |
 | `src/peekaudit/report.py` | tables, Holm families, figures | done |
@@ -60,7 +60,7 @@ conformance check.
 
 ```sh
 uv sync
-uv run pytest                # fast suite (~40 s; includes engine environment checks)
+uv run pytest                # fast suite (~90 s; includes real-engine agreement tests)
 uv run pytest --runslow      # adds Monte Carlo checks
 uv run ruff check .
 uv run ruff format --check .
@@ -69,13 +69,13 @@ uv run ruff format --check .
 CI (`.github/workflows/ci.yml`) runs on `pull_request` and `workflow_dispatch` only:
 ubuntu py3.11, ubuntu py3.13, windows py3.13, plus a lint job.
 
-## How to run the study (once M5/M6 land)
+## How to run the study
 
 ```sh
 uv run peekaudit run --config quick --out runs/quick      # target < 45 min, 4 workers
 uv run peekaudit status runs/quick
 uv run peekaudit report runs/quick --publish docs/results/quick
-uv run peekaudit run --config full --out runs/full        # R_AA = 20,000; est. 3-5 h
+uv run peekaudit run --config full --out runs/full        # R_AA = 20,000; est. 80 min idle
 ```
 
 Before the full run, time a one-unit pilot and project the total. If it would overrun the
@@ -102,13 +102,26 @@ estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_stu
 ## Status and next steps
 
 - **Done (M0):** scaffold, `stats.py`, `gst.py`, engine environment tests, CLI `versions`,
-  `scripts/reference_values.py`, DESIGN.md. `uv run pytest`, ruff check and format pass on
-  Windows, Python 3.11.
-- **Done (M1):** `scenarios.py`, `simulate.py` with moment, Hill, KS-shortcut, calibration
-  and chunk-determinism tests. Arm counts use round-half-up (not banker's rounding).
-- **Next (M2):** `methods/base.py`, `methods/reference.py`, `methods/registry.py`.
-- **Then:** M3 gbstats adapter, M4 spotify adapter, M5 runner + pilot
-  timing, M6 quick study + report, M7 conformance, M8 README findings and release notes.
-- **Open questions:** the exact quantity behind GrowthBook's min-sample-size guard (DESIGN
-  4.3) must be confirmed from source before `gbstats.seq.rel.guard150` is added; drop the
-  variant if it cannot be confirmed.
+  `scripts/reference_values.py`, DESIGN.md.
+- **Done (M1):** `scenarios.py`, `simulate.py`: moment, Hill, KS-shortcut, calibration and
+  chunk-determinism tests. Arm counts use round-half-up.
+- **Done (M2):** `methods/base.py` (Method, MethodOutput with tie margin, EvalContext,
+  ScalarMethod, stopping rule), `methods/reference.py`, `methods/registry.py`.
+- **Done (M3, M4):** gbstats and spotify adapters. Mirrors agree with the engines exactly
+  (bitwise-identical intervals in practice) on random grids incl. degenerate branches, on
+  study data and on random GST paths with overrun. spotify's alpha is 1 - 0.95 =
+  0.050000000000000044; the mirror uses it. The overrun rescaling (0.0198 full path vs
+  0.0297 look by look) is a regression test. Only the scaffold's gbstats fixture is
+  reproduced; the other sdist/repo fixtures need a download not done in this session.
+- **Done (M5):** `runner.py`, `verify.py`, CLI `run`/`status`/`verify`,
+  `scripts/run_study.py`. Pilot on an idle core: `lognorm-n20000-b20-aa` 170 s (140 s of it
+  real-engine verification, mostly spotify). Projection: quick ~32 min wall on 4 workers.
+- **Done (M7):** `conformance.py`, `peekaudit conform`, smoke battery in CI.
+- **Dropped:** `gbstats.seq.rel.guard150` (DESIGN 4.3): the compared quantity could not be
+  confirmed from source.
+- **M6 in progress:** quick study `scripts/run_study.py --config quick --out runs/quick`
+  started 2026-10-23 18:58 UTC. The machine was fully loaded by other jobs, so units take
+  ~2.5x the pilot time (ETA ~55 min). Resume by rerunning the same command; then
+  `uv run peekaudit report runs/quick --publish docs/results/quick`, write REPORT.md and
+  README findings (M8), bump the version to 0.1.0 *after* the run (the unit checkpoints
+  record the package version and resume matches on it).

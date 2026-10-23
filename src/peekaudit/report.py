@@ -20,7 +20,8 @@ import numpy as np
 from scipy import stats as st
 
 from peekaudit.gst import crossing_probability
-from peekaudit.runner import StudyConfig, is_done, unit_path
+from peekaudit.methods.registry import METHOD_NAMES
+from peekaudit.runner import StudyConfig, unit_path
 from peekaudit.scenarios import ALPHA, METRICS
 from peekaudit.stats import binom_sf_test, clopper_pearson, holm
 
@@ -45,8 +46,14 @@ def load_units(run_dir: str | Path) -> tuple[dict[str, Any], list[dict[str, Any]
     cfg = StudyConfig.from_dict(manifest["config"])
     units = []
     for u in cfg.unit_list():
-        if is_done(out, u, cfg):
-            units.append(json.loads(unit_path(out, u.id).read_text(encoding="utf-8")))
+        p = unit_path(out, u.id)
+        if not p.exists():
+            continue
+        d = json.loads(p.read_text(encoding="utf-8"))
+        # The config hash fixes the results; the package version is recorded, not matched, so
+        # a version bump without code changes does not hide finished units from the report.
+        if d.get("config_hash") == cfg.hash():
+            units.append(d)
     return manifest, units
 
 
@@ -250,6 +257,10 @@ def verification_totals(rows: list[dict[str, Any]]) -> dict[str, dict[str, int]]
 # --------------------------------------------------------------------------------- output
 
 
+def _order(method: str) -> int:
+    return METHOD_NAMES.index(method) if method in METHOD_NAMES else len(METHOD_NAMES)
+
+
 def _pct(x: float) -> str:
     return "n/a" if x is None or (isinstance(x, float) and math.isnan(x)) else f"{100 * x:.1f}"
 
@@ -311,13 +322,11 @@ def write_report(
     dest: Path,
     figures: list[str],
 ) -> None:
-    methods = list(units[0]["methods"]) if units else []
     labels: dict[str, str] = {}
     for u in units:
         for m, info in u["methods"].items():
             labels[m] = info["label"]
-            if m not in methods:
-                methods.append(m)
+    methods = [m for m in METHOD_NAMES if m in labels] + sorted(set(labels) - set(METHOD_NAMES))
     cfg = manifest["config"]
     vt = verification_totals(rows)
     lines = [
@@ -358,7 +367,7 @@ def write_report(
         "mismatches | interval mismatches | engine rejections |",
         "|---|---|---|---|---|---|---|",
     ]
-    for m, t in vt.items():
+    for m, t in sorted(vt.items(), key=lambda kv: _order(kv[0])):
         lines.append(
             f"| {m} | {t['replicate_looks']:,} | {t['decision_mismatches']} | {t['ties']} | "
             f"{t['no_result_mismatches']} | {t['interval_mismatches']} | {t['engine_rejections']} |"
@@ -399,7 +408,7 @@ def make_figures(rows: list[dict[str, Any]], dest: Path) -> list[str]:
     colors = {"fixed1": "#2a78d6", "daily14": "#eb6834", "stream140": "#1baf7a",
               "overrun21": "#6250d6"}  # fmt: skip
     markers = {"fixed1": "o", "daily14": "s", "stream140": "^", "overrun21": "D"}
-    methods = list(dict.fromkeys(r["method"] for r in rows))
+    methods = sorted(dict.fromkeys(r["method"] for r in rows), key=_order)
     files = []
     for n_max in (1000, 20000):
         for pi in (0.5, 0.2):
@@ -428,6 +437,8 @@ def make_figures(rows: list[dict[str, Any]], dest: Path) -> list[str]:
                 ax.axhline(5, color="#52514e", lw=1, ls="--")
                 ax.set_yscale("symlog", linthresh=10)
                 ax.set_ylim(0, 100)
+                ax.set_yticks([0, 5, 10, 20, 50, 100])
+                ax.set_yticklabels(["0", "5", "10", "20", "50", "100"])
                 ax.set_ylabel(f"{metric}\nFPR %", fontsize=8)
                 ax.tick_params(labelsize=7)
                 ax.grid(axis="y", color="#e5e4e0", lw=0.5)
