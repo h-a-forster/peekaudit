@@ -98,7 +98,7 @@ so third parties can add an engine without vectorising it.
 | `normal` | N(1, 1) | 1 | 1 | Spotify's vendor setting; oracle cell |
 | `bern_p10` | Bernoulli(0.10) | p | p(1-p) | |
 | `bern_p01` | Bernoulli(0.01) | p | p(1-p) | rare conversions; many zero-count early looks |
-| `lognorm` | LogNormal(mu=0, sigma=1.5) | e^{mu+sigma^2/2} = 3.080 | (e^{sigma^2}-1) e^{2mu+sigma^2} = 80.6 | skewness 33.5 |
+| `lognorm` | LogNormal(mu=0, sigma=1.5) | e^{mu+sigma^2/2} = 3.080 | (e^{sigma^2}-1) e^{2mu+sigma^2} = 80.53 | skewness 33.5 |
 | `pareto_a25` | classical Pareto, x_m = 1, tail a = 2.5 | a x_m/(a-1) = 1.667 | a x_m^2/((a-1)^2(a-2)) = 2.222 | finite variance, infinite third moment |
 | `pareto_a15` | classical Pareto, x_m = 1, a = 1.5 | 3 | infinite | stress: outside every method's assumptions; A/A only |
 | `ratio` | sessions S = 1 + Poisson(1.5), clicks C given S ~ Binomial(S, 0.2); metric sum C / sum S | q = 0.2 | linearised q(1-q)/E[S] = 0.064 | delta-method ratio; gbstats and references only |

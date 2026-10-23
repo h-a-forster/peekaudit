@@ -41,8 +41,8 @@ conformance check.
 | `src/peekaudit/stats.py` | Clopper-Pearson, exact binomial test, Holm, mean CI | done |
 | `src/peekaudit/gst.py` | Lan-DeMets solver (recursive integration), spending functions | done |
 | `src/peekaudit/cli.py` | `--version`, `versions`; later `run/status/report/verify/conform` | partial |
-| `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | M1 |
-| `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | M1 |
+| `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | done |
+| `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
 | `src/peekaudit/methods/base.py` | `LookStats`, `MethodOutput`, `Method` protocol, `ScalarMethod` | M2 |
 | `src/peekaudit/methods/reference.py` | naive z, mSPRT, ACS, GST-OBF | M2 |
 | `src/peekaudit/methods/gbstats_adapter.py` | gbstats engine calls + vectorised mirror | M3 |
@@ -104,9 +104,10 @@ estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_stu
 - **Done (M0):** scaffold, `stats.py`, `gst.py`, engine environment tests, CLI `versions`,
   `scripts/reference_values.py`, DESIGN.md. `uv run pytest`, ruff check and format pass on
   Windows, Python 3.11.
-- **Next (M1):** `scenarios.py` and `simulate.py` per DESIGN 3.1-3.4, with the M1
-  done-checks in DESIGN section 12.
-- **Then:** M2 reference methods, M3 gbstats adapter, M4 spotify adapter, M5 runner + pilot
+- **Done (M1):** `scenarios.py`, `simulate.py` with moment, Hill, KS-shortcut, calibration
+  and chunk-determinism tests. Arm counts use round-half-up (not banker's rounding).
+- **Next (M2):** `methods/base.py`, `methods/reference.py`, `methods/registry.py`.
+- **Then:** M3 gbstats adapter, M4 spotify adapter, M5 runner + pilot
   timing, M6 quick study + report, M7 conformance, M8 README findings and release notes.
 - **Open questions:** the exact quantity behind GrowthBook's min-sample-size guard (DESIGN
   4.3) must be confirmed from source before `gbstats.seq.rel.guard150` is added; drop the
