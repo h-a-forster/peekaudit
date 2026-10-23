@@ -107,7 +107,8 @@ def test_gst_obf_decision_uses_bound() -> None:
     out = GstOBF().evaluate(st, _ctx("fixed1", n_max=20000))
     assert out.reject[0, 0] == 1
     with pytest.raises(ValueError):
-        GstOBF().evaluate(st, EvalContext(METRICS["normal"], 1000, "fixed1", SCHEDULES["fixed1"], 0.1, 0.1))
+        ctx = EvalContext(METRICS["normal"], 1000, "fixed1", SCHEDULES["fixed1"], 0.1, 0.1)
+        GstOBF().evaluate(st, ctx)
 
 
 @pytest.mark.parametrize("cls", [NaiveZ, MSPRT, ACS, GstOBF])

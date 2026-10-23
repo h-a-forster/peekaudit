@@ -44,7 +44,11 @@ class MethodOutput:
 
     def rows(self, idx: np.ndarray | slice) -> MethodOutput:
         return MethodOutput(
-            self.reject[idx], self.lower[idx], self.upper[idx], self.no_result[idx], self.margin[idx]
+            self.reject[idx],
+            self.lower[idx],
+            self.upper[idx],
+            self.no_result[idx],
+            self.margin[idx],
         )
 
     @staticmethod
