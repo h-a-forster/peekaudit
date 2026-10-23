@@ -15,7 +15,8 @@ All rates are percentages with exact 95% Clopper-Pearson intervals. "Violates" m
 one-sided exact binomial test of FPR <= 5% (or coverage >= 95%) rejects after Holm
 adjustment at family-wise level 0.05 within the method's family (DESIGN 6.2). Calibration
 findings describe statistical behaviour on the stated inputs; they are not claims of
-software defects.
+software defects. Engine behaviours that may be worth raising with the maintainers are
+listed under [Engine behaviours](#engine-behaviours), each with a standalone reproduction.
 
 ## What was run
 
@@ -165,6 +166,38 @@ using a two-sided Fisher exact test per cell and Holm across cells:
 The full study agrees with the quick study within Monte Carlo error and sharpens it. For
 example, gbstats sequential, lognormal, N_max = 1,000, 20% to B, 140 looks: quick 15.8%
 [14.7, 17.0], full 16.7% [16.2, 17.2].
+
+## Engine behaviours
+
+Each item has a standalone reproduction that imports only the engine (plus numpy, scipy and
+pandas), so it cannot come from peekaudit's adapters. Draft issue texts are in
+[docs/upstream/](docs/upstream/README.md); none has been filed.
+
+1. **spotify-confidence 4.1.0, exception:** `ZTest.difference` raises `IndexError` when the
+   control group has a single unit with value 0
+   ([scripts/spotify_indexerror_repro.py](scripts/spotify_indexerror_repro.py)). Degenerate
+   input, outside the study grid.
+2. **spotify-confidence 4.1.0, bounds after an overrun:** once the cumulative sample in a
+   sequential call exceeds the planned size, every earlier bound is recomputed as if the
+   plan had been the largest sample in the call. With a plan of 800 and looks every 100 up
+   to 1,200, look 8 has adjusted alpha 0.0311 when analysed at the time and 0.0128 in a
+   re-analysis with all 12 looks; look 10: 0.0297 vs 0.0198
+   ([scripts/spotify_overrun_repro.py](scripts/spotify_overrun_repro.py), deterministic; the
+   re-analysis values equal an independent solver's bounds at fractions k/12). Past results
+   are not reproducible after an overrun.
+3. **gbstats 0.8.0, sequential FPR with few events:** relative effect, 1% conversions,
+   20,000 users 50/50, 140 looks: 15.2% [13.0, 17.6] false positives in a direct 1,000-
+   replicate engine simulation (study: 14.1% [13.7, 14.6]); the absolute effect gives 1.5%
+   [0.8, 2.5] (study: 2.1% [1.9, 2.3])
+   ([scripts/gbstats_rare_conversion_repro.py](scripts/gbstats_rare_conversion_repro.py)).
+   The draft also covers the tiny- and skewed-arm results above and asks for a documented
+   minimum sample size.
+4. **gbstats packaging:** gbstats 0.8.0 on PyPI (2024-06-20) is not the code on GrowthBook's
+   main branch, which also reports version 0.8.0. Based on a source comparison; to be
+   re-checked before filing.
+
+The spotify GST excesses on small, skewed or rare-event arms are not drafted: the reference
+GST shows the same pattern, so they are not engine defects.
 
 ## Limitations
 

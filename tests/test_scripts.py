@@ -1,4 +1,4 @@
-"""Standalone scripts: the resume wrapper never logs the interpreter's absolute path."""
+"""Standalone scripts: wrapper logging and the upstream reproductions."""
 
 from __future__ import annotations
 
@@ -26,3 +26,21 @@ def test_published_progress_logs_hold_no_local_paths() -> None:
     for log in (ROOT / "docs" / "results").rglob("progress.log"):
         text = log.read_text(encoding="utf-8")
         assert ":\\" not in text and "/home/" not in text and "/Users/" not in text, log
+
+
+def test_spotify_overrun_repro_values() -> None:
+    mod = _load("spotify_overrun_repro")
+    full = mod.adjusted_alpha(12)
+    within = mod.adjusted_alpha(8)
+    at10 = mod.adjusted_alpha(10).loc[10]
+    assert abs(at10 - 0.0297) < 5e-4
+    assert abs(full.loc[10] - 0.0198) < 5e-4
+    assert abs(within.loc[8] - 0.0311) < 5e-4
+    assert abs(full.loc[8] - 0.0128) < 5e-4
+
+
+def test_gbstats_rare_conversion_repro_runs(capsys) -> None:  # type: ignore[no-untyped-def]
+    mod = _load("gbstats_rare_conversion_repro")
+    mod.main(["--reps", "3", "--looks", "5", "--n", "2000"])
+    out = capsys.readouterr().out
+    assert "relative" in out and "absolute" in out

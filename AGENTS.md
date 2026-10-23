@@ -100,8 +100,13 @@ report lists every git SHA found.
 - spotify-confidence bounds equal the independent solver for power-family rho = 2 (K = 5, 10)
   to 2e-3 (`tests/test_engines_env.py`).
 - The spotify sequential call on the full path equals look-by-look calls while totals stay
-  <= the planned size. Past it, the engine rescales earlier fractions, so results differ;
-  overrun must be verified look by look.
+  <= the planned size. Once a call contains a total above the planned size, every bound in
+  that call is recomputed at fractions relative to the call's largest total (equal to the
+  independent solver at k/12 in `scripts/spotify_overrun_repro.py`), so earlier looks
+  change; overrun must be verified look by look.
+- gbstats sequential, relative effect, 1% conversions, 20,000 users 50/50, 140 looks: FPR
+  15.2% [13.0, 17.6] in a direct engine simulation (1,000 reps, seed 1), absolute 1.5%
+  (`scripts/gbstats_rare_conversion_repro.py`); matches the study (14.1%, 2.1%).
 - spotify `ZTest.difference` costs ~0.4 s per call at 14 looks and ~8.5 s at 140 looks.
   gbstats sequential costs ~0.18 ms per call, the t-test ~0.8 ms, Bayes ~5.7 ms. Hence the
   vectorised mirrors plus in-loop verification on a replicate subsample.
@@ -160,7 +165,12 @@ report lists every git SHA found.
   tested against full's remaining replicates. 0 of 2,224 cells differ after Holm (FPR/power
   and coverage); all 132 quick violations confirmed; 43 consistent -> violation, all within
   the quick 95% interval (<= 6.7% FPR). `docs/results/full/quick_vs_full.{md,json}`.
-- **Not done / next:** upstream issue drafts (`docs/upstream/`); copying the gbstats sdist
+- **Done (upstream drafts):** `docs/upstream/` holds four drafts (not filed): spotify
+  IndexError, spotify bounds after overrun, gbstats relative FPR with few events / tiny arms,
+  gbstats PyPI vs main (re-check before filing). Standalone repros in `scripts/`, tested in
+  `tests/test_scripts.py`. spotify GST small-arm excess deliberately not drafted (the
+  reference GST behaves the same).
+- **Not done / next:** copying the gbstats sdist
   and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
   product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
   interim answer); an engine-backed identity check (the two identity gates share arithmetic

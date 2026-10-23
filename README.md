@@ -172,12 +172,16 @@ non-zero on any disagreement. The published result is
 [docs/results/verify.json](docs/results/verify.json). The design, decision rules and every
 deviation from it are documented in [docs/DESIGN.md](docs/DESIGN.md).
 
-Two standalone scripts call the engines directly, without peekaudit code:
+Standalone scripts call the engines directly, without peekaudit code:
 [scripts/zero_count_example.py](scripts/zero_count_example.py) shows why z-tests over-reject
-with rare conversions and a small arm, and
-[scripts/spotify_indexerror_repro.py](scripts/spotify_indexerror_repro.py) is a minimal
-reproduction of a spotify-confidence exception on a single-unit control group (outside the
-study grid).
+with rare conversions and a small arm;
+[scripts/spotify_indexerror_repro.py](scripts/spotify_indexerror_repro.py) reproduces a
+spotify-confidence exception on a single-unit control group (outside the study grid);
+[scripts/spotify_overrun_repro.py](scripts/spotify_overrun_repro.py) shows spotify's
+sequential bounds for earlier looks changing once a later look exceeds the planned size; and
+[scripts/gbstats_rare_conversion_repro.py](scripts/gbstats_rare_conversion_repro.py)
+simulates the gbstats sequential test on 1% conversions (relative vs absolute effect).
+Draft upstream issue texts (not filed) are in [docs/upstream/](docs/upstream/README.md).
 
 ## Scope
 

@@ -14,6 +14,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   studies with Fisher exact tests and Holm adjustment. It detects nested studies (same seed
   and chunk size) and then compares with the larger study's remaining replicates.
 - `scripts/run_study.py --units GLOB` to split a long study into shorter sessions.
+- `docs/upstream/`: draft issue texts (not filed) for four engine behaviours, with new
+  standalone reproductions `scripts/spotify_overrun_repro.py` and
+  `scripts/gbstats_rare_conversion_repro.py`.
 
 - `peekaudit sensitivity` (`peekaudit.sensitivity`): recomputes each sequential method's
   A/A false-positive rate counting only rejections at looks where both arms hold at least

@@ -245,7 +245,7 @@ def write_comparison(
     res = compare_summaries(load_summary(small_path), load_summary(large_path))
     out_p = Path(out)
     out_p.parent.mkdir(parents=True, exist_ok=True)
-    out_p.with_suffix(".md").write_text(render_markdown(res), encoding="utf-8")
+    out_p.with_suffix(".md").write_text(render_markdown(res), encoding="utf-8", newline="\n")
     with open(out_p.with_suffix(".json"), "w", encoding="utf-8") as fh:
         json.dump(res, fh)
     return res
