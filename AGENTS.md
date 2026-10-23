@@ -45,8 +45,8 @@ conformance check.
 | `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
 | `src/peekaudit/methods/base.py` | `LookStats`, `MethodOutput`, `Method` protocol, `ScalarMethod` | M2 |
 | `src/peekaudit/methods/reference.py` | naive z, mSPRT, ACS, GST-OBF | M2 |
-| `src/peekaudit/methods/gbstats_adapter.py` | gbstats engine calls + vectorised mirror | M3 |
-| `src/peekaudit/methods/spotify_adapter.py` | spotify-confidence engine calls + mirror | M4 |
+| `src/peekaudit/methods/gbstats_adapter.py` | gbstats engine calls + vectorised mirror | done |
+| `src/peekaudit/methods/spotify_adapter.py` | spotify-confidence engine calls + mirror | done |
 | `src/peekaudit/methods/registry.py` | method names -> factories | M2 |
 | `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | M5 |
 | `src/peekaudit/runner.py` | units, process pool, checkpoints, progress log | M5 |
