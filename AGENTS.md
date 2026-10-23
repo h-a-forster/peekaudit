@@ -88,8 +88,9 @@ uv run peekaudit compare docs/results/quick docs/results/full --out docs/results
 Before a new long run, time a one-unit pilot and project the total. If it would overrun the
 estimate by more than 50%, stop and report. Keep sessions under ~45 min: split with
 `--units GLOB` into the same output directory. New experiments go to a new `runs/<name>`
-and `docs/results/<name>`; never write into `runs/full` or `docs/results/full`. Wrap long runs with `scripts/run_study.py`
-(retry up to 3 times; checkpoints make reruns idempotent) and watch `progress.log`.
+and `docs/results/<name>`; never write into `runs/full` or `docs/results/full`. Wrap long
+runs with `scripts/run_study.py` (retry up to 3 times; checkpoints make reruns idempotent)
+and watch `progress.log`.
 Completeness is one rule everywhere (`runner.unit_complete`: same config hash). The config
 hash does not cover the code: after a code change that affects results, rerun with
 `--force` (or a fresh `--out`); `run`/`status` warn about units from other code and the
@@ -179,5 +180,12 @@ report lists every git SHA found.
 - **Not done / next:** copying the gbstats sdist
   and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
   product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
-  interim answer); variance reduction (CUPED) stretch; tagging and publishing (README
+  interim answer); tagging and publishing (README
   install points at the repository without a tag until then).
+- **Deferred: variance reduction (CUPED).** Not started in round 2: doing it robustly needs a
+  pre-period covariate in `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic),
+  a gbstats `RegressionAdjustedStatistic` sequential adapter with its own mirror or direct
+  engine calls plus verification, true-effect and coverage definitions under adjustment, and
+  a separate small study (`runs/cuped`, `docs/results/cuped`; e.g. normal and lognormal with
+  correlation 0.5 and 0.8, N_max 1,000 and 20,000, daily14 and stream140, R_AA = 4,000).
+  Estimated 4-6 h including validation; it must not touch `runs/full`.
