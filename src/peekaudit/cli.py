@@ -102,6 +102,36 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def _cmd_report(args: argparse.Namespace) -> int:
+    from peekaudit.report import report
+
+    summary = report(args.run_dir, publish=args.publish)
+    failed = [g["gate"] for g in summary["gates"] if g["pass"] is False]
+    print(f"{len(summary['cells'])} cells, {len(summary['gates'])} gates, {len(failed)} failed")
+    for g in failed:
+        print(f"  gate FAILED: {g}")
+    return 1 if failed else 0
+
+
+def _cmd_conform(args: argparse.Namespace) -> int:
+    from peekaudit.conformance import check_conformance
+    from peekaudit.methods.registry import get_method
+
+    try:
+        method = get_method(args.method)
+        if args.claim:
+            method.claim = args.claim
+        rep = check_conformance(method, args.battery)
+    except Exception as exc:  # noqa: BLE001 - CLI reports errors with exit code 2
+        print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 2
+    print(rep.summary())
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as fh:
+            json.dump(rep.to_dict(), fh, indent=1)
+    return 0 if rep.passed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="peekaudit",
@@ -131,6 +161,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_verify.add_argument("--seed", type=int, default=0)
     p_verify.add_argument("--json", help="write the agreement counts to this file")
     p_verify.set_defaults(func=_cmd_verify)
+
+    p_report = sub.add_parser("report", help="tables, gates and figures from a study run")
+    p_report.add_argument("run_dir")
+    p_report.add_argument("--publish", help="also copy the results here (e.g. docs/results/quick)")
+    p_report.set_defaults(func=_cmd_report)
+
+    p_conform = sub.add_parser("conform", help="conformance battery for one method")
+    p_conform.add_argument("--method", required=True, help="registry name or module:factory")
+    p_conform.add_argument("--battery", default="smoke", choices=["smoke", "quick", "standard"])
+    p_conform.add_argument(
+        "--claim", choices=["anytime", "planned", "fixed"], help="override the method's claim"
+    )
+    p_conform.add_argument("--json", help="write the report to this file")
+    p_conform.set_defaults(func=_cmd_conform)
     return parser
 
 

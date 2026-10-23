@@ -40,7 +40,7 @@ conformance check.
 |---|---|---|
 | `src/peekaudit/stats.py` | Clopper-Pearson, exact binomial test, Holm, mean CI | done |
 | `src/peekaudit/gst.py` | Lan-DeMets solver (recursive integration), spending functions | done |
-| `src/peekaudit/cli.py` | `--version`, `versions`; later `run/status/report/verify/conform` | partial |
+| `src/peekaudit/cli.py` | `run`, `status`, `report`, `verify`, `conform`, `versions` | done |
 | `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | done |
 | `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
 | `src/peekaudit/methods/base.py` | `LookStats`, `MethodOutput`, `Method` protocol, `ScalarMethod` | M2 |
@@ -50,8 +50,8 @@ conformance check.
 | `src/peekaudit/methods/registry.py` | method names -> factories | M2 |
 | `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | done |
 | `src/peekaudit/runner.py` | units, process pool, checkpoints, progress log | done |
-| `src/peekaudit/report.py` | tables, Holm families, figures | M6 |
-| `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | M7 |
+| `src/peekaudit/report.py` | tables, Holm families, figures | done |
+| `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | done |
 | `scripts/reference_values.py` | recomputes the pinned oracle values and MC power table | done |
 | `tests/` | unit tests; `@pytest.mark.slow` Monte Carlo tests run with `--runslow` | ongoing |
 | `docs/DESIGN.md` | spec: formulas, validation, study design, milestones | done |

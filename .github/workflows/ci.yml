@@ -62,3 +62,8 @@ jobs:
 
       - name: Test
         run: uv run pytest
+
+      - name: Conformance smoke battery
+        run: |
+          uv run peekaudit conform --method ref.gst_obf --battery smoke
+          uv run peekaudit conform --method ref.acs --battery smoke
