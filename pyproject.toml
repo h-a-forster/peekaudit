@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "peekaudit"
+version = "0.0.1"
+description = "Simulation audit of the sequential-testing guarantees of open-source A/B testing engines: false-positive rate under peeking, coverage at the stopping time, power and expected sample size."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "peekaudit contributors" }]
+keywords = [
+    "a/b testing", "experimentation", "sequential testing", "peeking", "confidence sequences",
+    "msprt", "group sequential", "anytime-valid", "simulation", "statistics",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Testing",
+]
+# Core (simulation, reference methods, statistics, conformance) needs only numpy and scipy.
+dependencies = ["numpy>=1.26", "scipy>=1.11"]
+
+[project.optional-dependencies]
+# The audited engines, pinned exactly: results are specific to these versions.
+# bokeh<3.10: chartify 5.0.1 (a spotify-confidence dependency) fails to import with bokeh 3.10.
+engines = ["gbstats==0.8.0", "spotify-confidence==4.1.0", "bokeh<3.10"]
+plot = ["matplotlib>=3.8"]
+all = ["gbstats==0.8.0", "spotify-confidence==4.1.0", "bokeh<3.10", "matplotlib>=3.8"]
+
+[project.urls]
+Homepage = "https://github.com/h-a-forster/peekaudit"
+Documentation = "https://github.com/h-a-forster/peekaudit/tree/main/docs"
+Issues = "https://github.com/h-a-forster/peekaudit/issues"
+Changelog = "https://github.com/h-a-forster/peekaudit/blob/main/CHANGELOG.md"
+
+[project.scripts]
+peekaudit = "peekaudit.cli:main"
+
+[dependency-groups]
+# The dev environment includes the audited engines so the adapter tests always run.
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "matplotlib>=3.8",
+    "gbstats==0.8.0",
+    "spotify-confidence==4.1.0",
+    "bokeh<3.10",
+]
+
+[tool.uv]
+# gbstats 0.8.0 (the latest PyPI release, 2024-06-20) declares numpy<2 and pandas<2. Those
+# have no wheels for Python 3.12+, so on 3.12+ the caps are lifted. Python 3.11 keeps the
+# declared pins and is the canonical study environment ("as shipped"). gbstats' own test
+# suite (from its sdist) passes on Python 3.13 with numpy 2.x and pandas 2.x.
+override-dependencies = [
+    "numpy>=1.26,<2; python_version < '3.12'",
+    "numpy>=2.1; python_version >= '3.12'",
+    "pandas>=1.5.3,<2; python_version < '3.12'",
+    "pandas>=2.2,<3; python_version >= '3.12'",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/peekaudit"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/peekaudit", "tests", "docs", "scripts", "README.md", "LICENSE", "CHANGELOG.md",
+    "CONTRIBUTING.md", "SECURITY.md", "CITATION.cff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    # Third-party deprecation noise from the engines' dependency trees.
+    "ignore::DeprecationWarning:chartify.*",
+    "ignore::DeprecationWarning:bokeh.*",
+    "ignore:np.find_common_type is deprecated:DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use peekaudit, please cite it as below."
+title: peekaudit
+abstract: >-
+  Simulation audit of the sequential-testing guarantees of open-source A/B testing
+  engines: false-positive rate under peeking, coverage at the stopping time, power and
+  expected sample size, with exact intervals and multiple-testing control.
+type: software
+authors:
+  - name: "peekaudit contributors"
+repository-code: "https://github.com/h-a-forster/peekaudit"
+license: MIT
+version: 0.0.1

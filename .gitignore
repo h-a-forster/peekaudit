@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+.coverage
+htmlcov/
+.env
+# Scratch files
+tmp/
+# Study runs, per-replicate caches and any downloaded data (never committed)
+runs/
+cache/
+data/
