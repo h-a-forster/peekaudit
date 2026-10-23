@@ -1,13 +1,15 @@
-"""Command-line interface.
+"""Command-line interface (docs/DESIGN.md, section "CLI").
 
-Implemented: ``--version`` and ``versions`` (environment report: Python, core libraries and
-the audited engines with their licences). Planned subcommands (``run``, ``status``,
-``report``, ``conform``, ``verify``) are specified in docs/DESIGN.md, section "CLI".
+``run`` / ``status`` run and monitor a checkpointed study, ``report`` turns a run into
+tables and figures, ``verify`` compares engine mirrors with the real engines on random
+inputs, ``conform`` runs the conformance battery on any method, ``versions`` prints the
+environment.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import platform
 import sys
 from collections.abc import Sequence
@@ -44,6 +46,62 @@ def _cmd_versions(_: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_run(args: argparse.Namespace) -> int:
+    from peekaudit.runner import load_config, run_study
+
+    cfg = load_config(args.config)
+    out = args.out or f"runs/{cfg.name}"
+    res = run_study(cfg, out, workers=args.workers, units_glob=args.units, force=args.force)
+    return 1 if res.failed else 0
+
+
+def _cmd_status(args: argparse.Namespace) -> int:
+    from peekaudit.runner import study_status
+
+    st = study_status(args.run_dir)
+    print(
+        f"study {st['study']} (config {st['config_hash']}): {st['done']}/{st['total']} units done"
+    )
+    print(f"CPU time of finished units: {st['cpu_minutes_done']} min")
+    if st["failed"]:
+        print("failed: " + ", ".join(st["failed"]))
+    if st["unverified"]:
+        print("engine mismatch (not reported): " + ", ".join(st["unverified"]))
+    if st["last_log"]:
+        print("last: " + st["last_log"])
+    return 0
+
+
+def _cmd_verify(args: argparse.Namespace) -> int:
+    from peekaudit.methods.registry import get_method
+    from peekaudit.verify import grid_agreement
+
+    names = [args.method] if args.method else [
+        "gbstats.seq.rel", "gbstats.seq.rel.tuned", "gbstats.seq.abs", "gbstats.ttest.rel",
+        "gbstats.bayes.ctw95", "spotify.z", "spotify.gst",
+    ]  # fmt: skip
+    report: dict[str, dict[str, object]] = {}
+    ok = True
+    for name in names:
+        method = get_method(name)
+        n = args.n_gst if name == "spotify.gst" else args.n
+        res = grid_agreement(method, n=n, seed=args.seed)
+        report[name] = {kind: agr.to_dict() for kind, agr in res.items()}
+        for kind, agr in res.items():
+            ok &= agr.ok
+            print(
+                f"{name:<22} {kind:<10} cells={agr.cells:<5} decision_mismatches="
+                f"{agr.decision_mismatches} ties={agr.ties} no_result_mismatches="
+                f"{agr.no_result_mismatches} interval_mismatches={agr.interval_mismatches} "
+                f"max_rel_diff={agr.max_interval_rel_diff:.1e} {'OK' if agr.ok else 'FAIL'}"
+            )
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as fh:
+            json.dump({"seed": args.seed, "n": args.n, "n_gst": args.n_gst, "results": report},
+                      fh, indent=1)  # fmt: skip
+    return 0 if ok else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="peekaudit",
@@ -53,6 +111,26 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command")
     p_versions = sub.add_parser("versions", help="print Python, library and engine versions")
     p_versions.set_defaults(func=_cmd_versions)
+
+    p_run = sub.add_parser("run", help="run or resume a checkpointed study")
+    p_run.add_argument("--config", default="quick", help="quick | full | smoke | PATH.json")
+    p_run.add_argument("--out", help="output directory (default runs/<config name>)")
+    p_run.add_argument("--workers", type=int, help="worker processes (capped at 4)")
+    p_run.add_argument("--units", help="glob on unit ids, e.g. 'normal-*'")
+    p_run.add_argument("--force", action="store_true", help="recompute finished units")
+    p_run.set_defaults(func=_cmd_run)
+
+    p_status = sub.add_parser("status", help="progress of a study run")
+    p_status.add_argument("run_dir")
+    p_status.set_defaults(func=_cmd_status)
+
+    p_verify = sub.add_parser("verify", help="mirror vs engine on random inputs")
+    p_verify.add_argument("--method", help="one engine method (default: all)")
+    p_verify.add_argument("--n", type=int, default=2000, help="single-look inputs per method")
+    p_verify.add_argument("--n-gst", type=int, default=200, help="random paths for spotify.gst")
+    p_verify.add_argument("--seed", type=int, default=0)
+    p_verify.add_argument("--json", help="write the agreement counts to this file")
+    p_verify.set_defaults(func=_cmd_verify)
     return parser
 
 

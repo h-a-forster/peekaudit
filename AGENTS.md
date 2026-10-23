@@ -48,8 +48,8 @@ conformance check.
 | `src/peekaudit/methods/gbstats_adapter.py` | gbstats engine calls + vectorised mirror | done |
 | `src/peekaudit/methods/spotify_adapter.py` | spotify-confidence engine calls + mirror | done |
 | `src/peekaudit/methods/registry.py` | method names -> factories | M2 |
-| `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | M5 |
-| `src/peekaudit/runner.py` | units, process pool, checkpoints, progress log | M5 |
+| `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | done |
+| `src/peekaudit/runner.py` | units, process pool, checkpoints, progress log | done |
 | `src/peekaudit/report.py` | tables, Holm families, figures | M6 |
 | `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | M7 |
 | `scripts/reference_values.py` | recomputes the pinned oracle values and MC power table | done |
