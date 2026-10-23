@@ -22,7 +22,8 @@ conformance check.
 - `[tool.uv] override-dependencies` lifts gbstats' numpy<2 / pandas<2 caps on Python 3.12+
   only. `bokeh<3.10` is required (chartify 5.0.1 breaks on bokeh 3.10). Do not remove either
   without re-running the engine tests on 3.11 and 3.13.
-- No network or LLM/model API calls at run time. CPU only. At most 4 worker processes.
+- No network or LLM/model API calls at run time. CPU only. At most 4 worker processes in code;
+  use `--workers 3` on the shared development machine.
 - Long computations checkpoint each finished unit to disk, skip completed units on rerun and
   log progress to `runs/<study>/progress.log` (DESIGN section 7).
 - Scratch files go in `tmp/` (gitignored). Never commit `runs/`, `cache/` or `data/`; only
@@ -40,7 +41,7 @@ conformance check.
 |---|---|---|
 | `src/peekaudit/stats.py` | Clopper-Pearson, exact binomial test, Holm, mean CI | done |
 | `src/peekaudit/gst.py` | Lan-DeMets solver (recursive integration), spending functions | done |
-| `src/peekaudit/cli.py` | `run`, `status`, `sensitivity`, `report`, `verify`, `conform`, `versions` | done |
+| `src/peekaudit/cli.py` | `run`, `status`, `sensitivity`, `report`, `compare`, `verify`, `conform`, `versions` | done |
 | `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | done |
 | `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
 | `src/peekaudit/methods/base.py` | `MethodOutput`, `EvalContext`, `Method`, `ScalarMethod`, stopping rule | done |
@@ -51,6 +52,7 @@ conformance check.
 | `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | done |
 | `src/peekaudit/runner.py` | units, config validation, process pool, checkpoints, provenance, progress log | done |
 | `src/peekaudit/sensitivity.py` | FPR counting only looks with both arms >= 150 (checkpointed) | done |
+| `src/peekaudit/compare.py` | cross-study cell-by-cell check (nesting-aware Fisher + Holm) | done |
 | `src/peekaudit/report.py` | tables, Holm families, gates, detection limit, findings, limitations, figures | done |
 | `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | done |
 | `scripts/reference_values.py` | recomputes the pinned oracle values and MC power table | done |
@@ -77,11 +79,16 @@ uv run peekaudit run --config quick --out runs/quick      # target < 45 min, 4 w
 uv run peekaudit status runs/quick
 uv run peekaudit sensitivity runs/quick                   # ~2 min, adds the guarded FPR
 uv run peekaudit report runs/quick --publish docs/results/quick
-uv run peekaudit run --config full --out runs/full        # R_AA = 20,000; ~2.5-3 h projected
+uv run python scripts/run_study.py --config full --out runs/full --workers 3   # R_AA = 20,000; 53 min on 4 workers
+uv run peekaudit sensitivity runs/full --workers 3                            # ~6 min
+uv run peekaudit report runs/full --publish docs/results/full
+uv run peekaudit compare docs/results/quick docs/results/full --out docs/results/full/quick_vs_full
 ```
 
-Before the full run, time a one-unit pilot and project the total. If it would overrun the
-estimate by more than 50%, stop and report. Wrap long runs with `scripts/run_study.py`
+Before a new long run, time a one-unit pilot and project the total. If it would overrun the
+estimate by more than 50%, stop and report. Keep sessions under ~45 min: split with
+`--units GLOB` into the same output directory. New experiments go to a new `runs/<name>`
+and `docs/results/<name>`; never write into `runs/full` or `docs/results/full`. Wrap long runs with `scripts/run_study.py`
 (retry up to 3 times; checkpoints make reruns idempotent) and watch `progress.log`.
 Completeness is one rule everywhere (`runner.unit_complete`: same config hash). The config
 hash does not cover the code: after a code change that affects results, rerun with
@@ -143,11 +150,19 @@ report lists every git SHA found.
   Holm-adjusted p, the min-arm sensitivity, limitations and deviations; republished to
   `docs/results/quick/`. Study numbers are unchanged (no re-run needed: only reporting and
   the added sensitivity changed). README results rewritten around the small-arm mechanism.
-- **Not done / next:** a hand-written root `REPORT.md` (the generated
-  `docs/results/quick/REPORT.md` is the current report and now holds the limitations and
-  findings); the full config (20,000 / 10,000 replicates, ~2.5-3 h projected on 4 idle
-  workers: time a pilot first); copying the gbstats sdist and spotify repo fixtures (needs
-  a download); a guarded gbstats engine variant once the product's minimum-sample rule is
-  confirmed from source (the sensitivity analysis is the interim answer); an engine-backed
-  identity check (the two identity gates share arithmetic with the mirrors); tagging and
-  publishing (README install points at the repository without a tag until then).
+- **Done (full study):** `runs/full` at git `e4e8dcc`, config hash `dde79da82e86a243`:
+  52/52 units, 0 failed, 0 unverified, 53.2 min wall / 211.8 CPU-min on 4 workers; 40/40
+  gates; 1,126,400 in-loop replicate-looks with 0 engine mismatches. Sensitivity 5.7 min on 3
+  workers (every unguarded count equals the run's). Published to `docs/results/full/`
+  (progress log scrubbed). Root `REPORT.md` and README lead with it.
+- **Done (cross-check):** `peekaudit compare` (`compare.py`). Quick replicates are the first
+  replicates of full (same seed and chunks; caches verified identical), so each quick rate is
+  tested against full's remaining replicates. 0 of 2,224 cells differ after Holm (FPR/power
+  and coverage); all 132 quick violations confirmed; 43 consistent -> violation, all within
+  the quick 95% interval (<= 6.7% FPR). `docs/results/full/quick_vs_full.{md,json}`.
+- **Not done / next:** upstream issue drafts (`docs/upstream/`); copying the gbstats sdist
+  and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
+  product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
+  interim answer); an engine-backed identity check (the two identity gates share arithmetic
+  with the mirrors); variance reduction (CUPED) stretch; tagging and publishing (README
+  install points at the repository without a tag until then).

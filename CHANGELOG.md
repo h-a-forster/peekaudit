@@ -7,6 +7,14 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Full study results in `docs/results/full/` (20,000 A/A and 10,000 A/B replicates per
+  unit, 52 units, all gates pass), with the min-arm sensitivity and a scrubbed progress log.
+- Root `REPORT.md`: summary of the full study with the quick study as a cross-check.
+- `peekaudit compare` (`peekaudit.compare`): cell-by-cell cross-check of two published
+  studies with Fisher exact tests and Holm adjustment. It detects nested studies (same seed
+  and chunk size) and then compares with the larger study's remaining replicates.
+- `scripts/run_study.py --units GLOB` to split a long study into shorter sessions.
+
 - `peekaudit sensitivity` (`peekaudit.sensitivity`): recomputes each sequential method's
   A/A false-positive rate counting only rejections at looks where both arms hold at least
   150 units. Checkpointed per unit; the regenerated unguarded counts must equal the run's.
@@ -20,6 +28,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   run before anything is written to the output folder.
 
 ### Changed
+
+- README results now lead with the full study; the quick study is the cross-check.
 
 - One completeness rule for `run`, `status` and `report`: same config hash. The package
   version is recorded, not matched, so `status` no longer reports a finished run as 0 done

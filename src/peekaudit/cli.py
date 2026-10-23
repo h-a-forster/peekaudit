@@ -130,6 +130,16 @@ def _cmd_sensitivity(args: argparse.Namespace) -> int:
     return 1 if bad else 0
 
 
+def _cmd_compare(args: argparse.Namespace) -> int:
+    from peekaudit.compare import write_comparison
+
+    res = write_comparison(args.small, args.large, args.out)
+    for kind, d in res["by_kind"].items():
+        print(f"{kind}: {d['compared']} cells, {d['holm_p_lt_0.05']} differ (Holm p < 0.05)")
+    print(f"nested={res['nested']} violation changes={len(res['violation_changes'])}")
+    return 1 if any(d["holm_p_lt_0.05"] for d in res["by_kind"].values()) else 0
+
+
 def _cmd_conform(args: argparse.Namespace) -> int:
     from peekaudit.conformance import check_conformance
     from peekaudit.methods.registry import get_method
@@ -191,6 +201,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_sens.add_argument("--min-arm", type=int, default=150, help="minimum units per arm")
     p_sens.add_argument("--workers", type=int, help="worker processes (capped at 4)")
     p_sens.set_defaults(func=_cmd_sensitivity)
+
+    p_cmp = sub.add_parser("compare", help="cell-by-cell cross-check of two published studies")
+    p_cmp.add_argument("small", help="summary.json (or its directory) of the smaller study")
+    p_cmp.add_argument("large", help="summary.json (or its directory) of the larger study")
+    p_cmp.add_argument("--out", required=True, help="output stem; writes .md and .json")
+    p_cmp.set_defaults(func=_cmd_compare)
 
     p_conform = sub.add_parser("conform", help="conformance battery for one method")
     p_conform.add_argument("--method", required=True, help="registry name or module:factory")

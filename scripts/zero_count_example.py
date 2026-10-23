@@ -6,8 +6,8 @@ error comes from the control arm alone, and a difference of one control rate loo
 "significant". This is a property of the Wald z-test, not a software defect.
 
 With the study's bern_p01, N_max = 1,000, 20% to B cell (800 vs 200 units, p = 1%), B has
-zero conversions with probability 0.99^200 = 13.4%, which is most of the 14.2% false-positive
-rate measured at the single final look.
+zero conversions with probability 0.99^200 = 13.4%, which is essentially the whole false-positive
+rate measured at the single final look (full study: 13.3% [12.9, 13.8]; quick: 14.2%).
 
 Usage: uv run python scripts/zero_count_example.py
 """

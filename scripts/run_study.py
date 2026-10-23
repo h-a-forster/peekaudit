@@ -1,6 +1,7 @@
 """Run a study with automatic resume-on-failure.
 
 Usage: uv run python scripts/run_study.py [--config quick] [--out runs/quick] [--attempts 3]
+       [--workers 3] [--units 'normal-*']
 
 Wraps ``peekaudit run`` in up to ``--attempts`` attempts. Each finished unit is checkpointed,
 so a rerun only computes what is missing. Progress goes to ``<out>/progress.log``; this
@@ -29,6 +30,7 @@ def main() -> int:
     ap.add_argument("--out", default=None)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--attempts", type=int, default=3)
+    ap.add_argument("--units", default=None, help="glob on unit ids (split a long study)")
     args = ap.parse_args()
     out = Path(args.out or f"runs/{args.config}")
     out.mkdir(parents=True, exist_ok=True)
@@ -37,6 +39,8 @@ def main() -> int:
         sys.executable, "-m", "peekaudit", "run", "--config", args.config,
         "--out", str(out), "--workers", str(args.workers),
     ]  # fmt: skip
+    if args.units:
+        cmd += ["--units", args.units]
     shown = loggable_command(cmd)
     code = 1
     for attempt in range(1, args.attempts + 1):

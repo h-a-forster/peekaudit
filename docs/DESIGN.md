@@ -440,6 +440,8 @@ recomputed), and `REPORT.md` with:
 peekaudit run [--config quick|full|PATH] [--out runs/NAME] [--workers N<=4] [--units GLOB] [--force]
 peekaudit status runs/NAME
 peekaudit report runs/NAME [--publish docs/results/NAME]
+peekaudit sensitivity runs/NAME [--min-arm 150] [--workers N]
+peekaudit compare docs/results/SMALL docs/results/LARGE --out STEM   # cross-study check
 peekaudit verify [--method NAME] [--n 2000]          # mirror-vs-engine randomised grid
 peekaudit conform --method NAME --battery smoke|quick|standard [--json PATH]
 peekaudit versions
@@ -541,6 +543,11 @@ Cut or deferred, with reasons:
 - **Report content (6.4):** the generated report carries the detection limit, the findings
   list with Holm-adjusted p-values (split into sequential, single-look and coverage
   findings), the limitations and this deviations list.
+- **Cross-study check (added after v0.1):** `peekaudit compare` tests every cell of a smaller
+  study against a larger one with a two-sided Fisher exact test, Holm-adjusted per rate kind
+  (FPR/power, coverage). Studies with the same master seed and chunk size are nested (the
+  smaller study's replicates are the larger one's first replicates), so the comparison then
+  uses the larger study's remaining replicates (counts differenced), which are independent.
 
 ## 14. References
 
