@@ -327,10 +327,12 @@ smaller arm held fewer than 150 units.
 ## Sensitivity: rejections only where both arms hold >= 150 units
 
 Many excesses arise at the first looks of small experiments. With 20% of traffic to
-B and N_max = 1,000, the first stream140 look has 6 users in A and 1 in B. A zero-
-variance arm gives a standard error of 0, or a z-statistic rests on a few
-observations, and the engine reports significance on 1 to 30 users in B. The engines
-apply no minimum; GrowthBook's product layer hides results below a minimum sample
+B and N_max = 1,000, the first stream140 look has 6 users in A and 1 in B. spotify's
+binary variance p(1 - p) is 0 for a one-unit arm, so its standard error can be 0 or
+rest on the other arm alone, and it reports significance on 1 to 30 users in B;
+gbstats and the reference methods give no result for an arm with n <= 1, but a
+z-statistic on a few observations still rejects too often. The engines apply no
+minimum; GrowthBook's product layer hides results below a minimum sample
 size of 150 (not part of the audited library). The rows below recompute FPR counting
 only rejections at looks where both arms hold at least 150 units (same data,
 same analysis, earlier results ignored), Holm-adjusted per method and family as in
@@ -1983,8 +1985,33 @@ Cells flagged in the main analysis:
 - **Identity gates (5.3):** the Bayes-vs-z and ACS-vs-gbstats-absolute identities compare
   code paths that share arithmetic (the variance helper; `acs_pvalue_halfwidth`). They are
   reported as mirror self-consistency checks. Engine correctness rests on the in-loop and
-  randomised-grid comparisons with the real engines.
+  randomised-grid comparisons with the real engines. Added after v0.1:
+  `verify.engine_identities` (run by `peekaudit verify`) checks both identities against the
+  real engines on random inputs: gbstats Bayes against a z-test written from the textbook
+  delta-method formulas, and the gbstats absolute sequential engine against `ref.acs`. Both
+  apply gbstats' refusal rules (an arm variance <= 0, or a zero control mean, gives no
+  result on either scale).
 - **Report content (6.4):** the generated report carries the detection limit, the findings
   list with Holm-adjusted p-values (split into sequential, single-look and coverage
   findings), the limitations and this deviations list.
+- **Cross-study check (added after v0.1):** `peekaudit compare` tests every cell of a smaller
+  study against a larger one with a two-sided Fisher exact test, Holm-adjusted per rate kind
+  (FPR/power, coverage). Studies with the same master seed and chunk size, whose smaller
+  replicate counts are whole chunks (or equal), are nested (the smaller study's replicates
+  are the larger one's first replicates), so the comparison then uses the larger study's
+  remaining replicates (counts differenced), which are independent. A partial last chunk is
+  not a prefix of a full chunk (arm B's stream is offset), so such studies are not nested.
+- **Like-for-like GST control (added after v0.1):** `ref.gst_obf` differs from
+  `spotify.gst` in its spending function (O'Brien-Fleming vs power family rho = 2) and in
+  its variance (n - 1, no result for an arm with n <= 1), so it supports only a qualitative
+  comparison. `ref.gst_pow2` (power family rho = 2, peekaudit's own bounds, reference
+  variance) is outside the study grid, so the config hash and published runs are unchanged;
+  `scripts/gst_reference_comparison.py` evaluates it, `spotify.gst` and `ref.gst_obf` on the
+  run's own A/A data, checks that the spotify and OBF counts equal the run's, and tests
+  spotify vs pow2 per cell with an exact McNemar test (Holm over cells).
+- **Unit ids (7):** config validation also checks that each unit's design can run
+  (N_max >= 2, allocation strictly between 0% and 100%, both arms growing at every look, a
+  calibratable lift, no A/B unit for an infinite-variance metric, canonical id).
+- **Provenance (7):** the git SHA is read only from a peekaudit source checkout that is the
+  top level of its repository; otherwise (a regular install) it is recorded as `unknown`.
 

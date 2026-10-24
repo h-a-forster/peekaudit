@@ -17,9 +17,15 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Engine-backed identity checks (`peekaudit.verify.engine_identities`, part of
   `peekaudit verify`): real gbstats engines against independent formulas and `ref.acs`;
   `docs/results/verify.json` regenerated with them.
-- `docs/upstream/`: draft issue texts (not filed) for four engine behaviours, with new
-  standalone reproductions `scripts/spotify_overrun_repro.py` and
-  `scripts/gbstats_rare_conversion_repro.py`.
+- `docs/upstream/`: draft issue texts (not filed) for five engine behaviours, with new
+  standalone reproductions `scripts/spotify_overrun_repro.py`,
+  `scripts/gbstats_rare_conversion_repro.py` and `scripts/spotify_single_unit_repro.py`
+  (spotify-confidence reports significance for a one-unit binary group).
+- Like-for-like control for spotify's GST: `ref.gst_pow2` (power-family rho = 2 spending,
+  reference variances; outside the study grid) and `peekaudit.gst_reference` /
+  `scripts/gst_reference_comparison.py`, which compare it with `spotify.gst` and
+  `ref.gst_obf` on a run's own A/A data (checkpointed per unit, paired McNemar tests).
+  Results in `docs/results/full/gst_reference.{md,json}`.
 
 - `peekaudit sensitivity` (`peekaudit.sensitivity`): recomputes each sequential method's
   A/A false-positive rate counting only rejections at looks where both arms hold at least
@@ -45,6 +51,14 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - README results: states the small-arm mechanism, separates single-look from sequential
   failures, adds the stress-family results, and corrects the overrun maximum (8.2%) and the
   peeking figures (40% at N = 20,000; 46% at N = 1,000).
+- REPORT and README: the O'Brien-Fleming reference GST is no longer presented as a
+  like-for-like control for spotify's GST. The rho = 2 reference violates in the same cells,
+  but about half of the largest spotify excess (10% conversions, 140 looks) comes from
+  one-unit binary arms that the reference refuses; this is now drafted upstream. Peeking
+  figures that match the exact values are restricted to N_max = 20,000, and "the engines
+  report significance on 1 to 30 users" now says spotify (gbstats refuses n <= 1 arms).
+- README install: `uv tool install` needs `--python 3.11` (it ignores the project's
+  dependency overrides, so 3.12+ tries to build pandas 1.5.3).
 - DESIGN 5.4 and `scripts/reference_values.py` use m = 96 primary cells (critical FPR 6.20%
   at R = 4,000).
 
@@ -53,6 +67,20 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `critical_rate` / `ConformanceReport.detection_limit` used the method's alpha as the
   family-wise level; the Holm level is now a separate `fwer` (default 0.05), also used for
   the violation rule.
+- In-loop engine verification now fails a unit on no-result or interval mismatches as well
+  as decision mismatches (coverage uses the mirror's intervals); the report re-derives the
+  rule from per-cell counts for older units. Published runs: 0 mismatches of every kind.
+- The git SHA in manifests, timing sidecars and status was taken from whatever repository
+  enclosed `<install>/../..`; it is now read only from a peekaudit checkout that is the top
+  level of its repository, otherwise `unknown`.
+- `peekaudit compare` treated studies as nested when the smaller replicate counts were not
+  whole chunks; a partial chunk is not a prefix of a full one (arm B's stream is offset).
+  The published quick/full comparison (whole chunks) is unaffected.
+- `StudyConfig` validation accepted unit ids with impossible designs (N_max 0, allocation 0%
+  or above 100%, arms that do not grow at every look, A/B units for infinite-variance
+  metrics, non-canonical ids).
+- DESIGN 4.2 said single-unit arms give `is_significant` False; for binary data they can
+  give SE 0 and a significant result (the mirror already matched the engine).
 - `scripts/run_study.py` no longer writes the interpreter's absolute path to the progress
   log; the published `docs/results/quick/progress.log` is scrubbed.
 

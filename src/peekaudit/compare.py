@@ -1,9 +1,10 @@
 """Cross-check two published studies cell by cell (for example quick against full).
 
 Both studies draw replicates from ``SeedSequence(master_seed, spawn_key=(unit, chunk))``.
-With the same master seed and chunk size, the smaller study's replicates are exactly the
-first chunks of the larger one, so the two are *nested*, not independent. Comparing the
-small study with the large one would then compare a sample with a superset of itself.
+With the same master seed and chunk size, and replicate counts that are whole chunks, the
+smaller study's replicates are exactly the first chunks of the larger one, so the two are
+*nested*, not independent. Comparing the small study with the large one would then compare
+a sample with a superset of itself.
 :func:`compare_summaries` detects nesting from the manifests and, when it holds, compares
 the small study with the *remaining* replicates of the large one (counts differenced),
 which are independent of it.
@@ -42,11 +43,22 @@ def load_summary(path: str | Path) -> dict[str, Any]:
 
 
 def is_nested(small: dict[str, Any], large: dict[str, Any]) -> bool:
-    """True when the small study's replicates are the leading replicates of the large one."""
+    """True when the small study's replicates are the leading replicates of the large one.
+
+    Needs the same master seed and chunk size, and for each replicate count either the same
+    count or a multiple of the chunk size no larger than the large study's. A partial last
+    chunk is not a prefix of the full chunk: arm B is drawn after a shorter arm-A draw, so
+    its random stream is offset and its data differ.
+    """
     cs, cl = small["manifest"]["config"], large["manifest"]["config"]
     if any(cs.get(k) != cl.get(k) for k in _CFG_KEYS_FOR_NESTING):
         return False
-    return bool(cs["r_aa"] <= cl["r_aa"] and cs["r_ab"] <= cl["r_ab"])
+    chunk = int(cs["chunk"])
+    for key in ("r_aa", "r_ab"):
+        r_s, r_l = int(cs[key]), int(cl[key])
+        if not (r_s == r_l or (r_s < r_l and r_s % chunk == 0)):
+            return False
+    return True
 
 
 def _key(cell: dict[str, Any]) -> tuple[str, str, str]:

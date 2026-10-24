@@ -68,14 +68,19 @@ are few, and the guard changes nothing.
   with 200 users in B (1% conversions 13.3% [12.9, 13.8], lognormal 7.1%, Pareto 6.1%). The
   largest sequential excesses are 20.5% [19.9, 21.1] (1% conversions, daily looks; guarded
   16.8%) and 20.4% [19.8, 20.9] (10% conversions, 140 looks; 44% of the false positives at
-  the first look, guarded 5.1% [4.8, 5.4]). Guarded, 14 of 60 still violate. The
-  independently implemented reference GST shows the same pattern (17 of 72), so this is how
-  a z-based group sequential test behaves on small, skewed or rare-event arms, not an
-  implementation defect. Past the planned sample size it reaches 8.2% [7.8, 8.5] on normal
+  the first look, guarded 5.1% [4.8, 5.4]). Guarded, 14 of 60 still violate. A reference
+  GST with spotify's own spending function (power family, rho = 2) and sample variances
+  violates in exactly the same 21 cells, so these excesses are how a z-based group
+  sequential test behaves on small, skewed or rare-event arms. The exception is one-unit
+  binary arms: spotify's variance p(1 - p) is 0 for a single user, and it reports
+  significance there (SE 0, p = 0), where the reference gives no result. That accounts for
+  about half of the 20.4% cell (reference: 11.5% [11.0, 11.9];
+  [gst_reference.md](docs/results/full/gst_reference.md)). Past the planned sample size it reaches 8.2% [7.8, 8.5] on normal
   data (informational: the library makes no claim there).
-- **Peeking at fixed-horizon tests** inflates FPR to 21-24% with 14 daily looks and about 40%
-  with 140 looks at N = 20,000, matching the exact values (22.0% and 39.9%); 46% at
-  N = 1,000. The gbstats Bayesian "chance to win >= 95%" rule is exactly a two-sided 10%
+- **Peeking at fixed-horizon tests** inflates FPR to 21-22% with 14 daily looks and about 40%
+  with 140 looks at N = 20,000, matching the exact values (22.0% and 39.9%); at N = 1,000,
+  23-24% (daily) and 46% (140 looks), above the exact values because the early looks are
+  tiny. The gbstats Bayesian "chance to win >= 95%" rule is exactly a two-sided 10%
   z-test and reaches 37-39% when peeked daily.
 
 **Cross-check with the quick study** (4,000 / 2,000 replicates, published in
@@ -99,8 +104,8 @@ particular that gbstats 0.8.0 on PyPI is older than the code GrowthBook runs tod
 You need [uv](https://docs.astral.sh/uv/). peekaudit is distributed from git only.
 
 ```sh
-# as a tool, from git (pin a release tag once one is published)
-uv tool install "peekaudit[engines] @ git+https://github.com/h-a-forster/peekaudit"
+# as a tool, from git (pin a release tag once one is published); --python 3.11 is required
+uv tool install --python 3.11 "peekaudit[engines] @ git+https://github.com/h-a-forster/peekaudit"
 
 # or for development (canonical study environment: Python 3.11)
 git clone https://github.com/h-a-forster/peekaudit
@@ -110,8 +115,12 @@ uv run peekaudit versions
 ```
 
 Python 3.11 satisfies gbstats 0.8.0's own pins (numpy<2, pandas<2). On Python 3.12+ the uv
-project lifts those pins (gbstats' test suite passes on numpy 2 / pandas 2); a plain pip
-install with the `engines` extra on 3.12+ will not resolve without the same overrides.
+project lifts those pins (gbstats' test suite passes on numpy 2 / pandas 2), but only inside
+a checkout (`uv sync`, `uv run`): `uv tool install` and `pip install` ignore the project's
+`[tool.uv] override-dependencies`. With the `engines` extra on 3.12+ they try to build
+pandas 1.5.3 from source and fail, so pass `--python 3.11` (as above), or supply the same
+overrides yourself (`uv tool install --overrides overrides.txt ...` with the four lines from
+`pyproject.toml`).
 
 ## Quick start
 

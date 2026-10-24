@@ -144,6 +144,28 @@ def test_edge_cases() -> None:
     assert not m.supports(METRICS["ratio"])
 
 
+def test_single_unit_binary_arm_is_significant_in_engine_and_mirror() -> None:
+    """A binary arm with one unit has binary variance p(1 - p) = 0, so the SE can be 0 or come
+    from the other arm alone, and the engine reports significance (DESIGN 4.2). The
+    reference methods refuse such an arm (n - 1 variance)."""
+    ctx = EvalContext(METRICS["bern_p10"], 1000, "custom", np.arange(1), 0.0)
+    ref = get_method("ref.naive_z")
+    for sum_a, sum_b, sig in ((0.0, 1.0, True), (1.0, 1.0, True), (1.0, 0.0, False)):
+        st = LookStats(np.array([6]), np.array([[sum_a]]), np.array([[sum_a]]),
+                       np.array([1]), np.array([[sum_b]]), np.array([[sum_b]]), True)  # fmt: skip
+        for name in ("spotify.z", "spotify.gst"):
+            m = get_method(name)
+            mirror, engine = m.evaluate(st, ctx), m.evaluate_engine(st, ctx)
+            assert compare(mirror, engine).ok
+            assert bool(engine.reject[0, 0]) is sig and not engine.no_result[0, 0]
+        assert ref.evaluate(st, ctx).no_result[0, 0]
+    zero_se = get_method("spotify.z").evaluate_engine(
+        LookStats(np.array([6]), np.zeros((1, 1)), np.zeros((1, 1)),
+                  np.array([1]), np.ones((1, 1)), np.ones((1, 1)), True), ctx,
+    )  # fmt: skip
+    assert zero_se.lower[0, 0] == zero_se.upper[0, 0] == 1.0
+
+
 def test_engine_indexerror_branch_is_mirrored_as_no_result() -> None:
     """spotify-confidence 4.1.0 raises IndexError for one control unit with value 0 and a
     non-binary treatment (scripts/spotify_indexerror_repro.py); both sides give no result."""

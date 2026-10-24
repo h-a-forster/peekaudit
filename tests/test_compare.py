@@ -46,6 +46,22 @@ def test_nesting_detection() -> None:
     assert is_nested(small, _summary("f", 20000, []))
     assert not is_nested(small, _summary("f", 20000, [], seed=2))
     assert not is_nested(_summary("f", 20000, []), small)
+    # A partial last chunk is not a prefix of the larger study's full chunk.
+    assert not is_nested(_summary("q", 4100, []), _summary("f", 20000, []))
+    assert is_nested(_summary("q", 4100, []), _summary("f", 4100, []))
+
+
+def test_partial_chunk_is_not_a_prefix() -> None:
+    """Why is_nested needs whole chunks: arm B of a shorter chunk is drawn from another offset."""
+    import numpy as np
+
+    from peekaudit.scenarios import unit_from_id
+    from peekaudit.simulate import generate_chunk
+
+    u = unit_from_id("lognorm-n1000-b50-aa")
+    a, b = generate_chunk(u, 0, 100), generate_chunk(u, 0, 250)
+    assert np.array_equal(a.sum_a, b.sum_a[:100])
+    assert not np.array_equal(a.sum_b, b.sum_b[:100])
 
 
 def test_nested_counts_are_differenced() -> None:

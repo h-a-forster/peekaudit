@@ -1,0 +1,3845 @@
+{
+ "all_match_run": true,
+ "cells": [
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    57,
+    14
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 4097,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.0,
+    "rate": 0.19675,
+    "rate_ci95": [
+     0.19125983217133094,
+     0.20232845859860119
+    ],
+    "rejections": 3935,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.0,
+    "rate": 0.20485,
+    "rate_ci95": [
+     0.19927481090480156,
+     0.21051111388990015
+    ],
+    "rejections": 4097,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 0.0,
+    "rate": 0.20485,
+    "rate_ci95": [
+     0.19927481090480156,
+     0.21051111388990015
+    ],
+    "rejections": 4097,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    800,
+    200
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 2665,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.0,
+    "rate": 0.13325,
+    "rate_ci95": [
+     0.1285686329224852,
+     0.13803825369603578
+    ],
+    "rejections": 2665,
+    "rejections_look1": 2665,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.0,
+    "rate": 0.13325,
+    "rate_ci95": [
+     0.1285686329224852,
+     0.13803825369603578
+    ],
+    "rejections": 2665,
+    "rejections_look1": 2665,
+    "violation": true
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 0.0,
+    "rate": 0.1333,
+    "rate_ci95": [
+     0.1286178779973344,
+     0.13808899393109214
+    ],
+    "rejections": 2666,
+    "rejections_look1": 2666,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    6,
+    1
+   ],
+   "matches_run": true,
+   "mcnemar_p": 3.1861838222649046e-58,
+   "mcnemar_p_holm": 2.2621905138080822e-56,
+   "n": 20000,
+   "paired": {
+    "both": 3751,
+    "pow2_only": 0,
+    "spotify_only": 192
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.0,
+    "rate": 0.1959,
+    "rate_ci95": [
+     0.19041896107151518,
+     0.20146957803798818
+    ],
+    "rejections": 3918,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.0,
+    "rate": 0.18755,
+    "rate_ci95": [
+     0.18216079932989415,
+     0.1930301799840467
+    ],
+    "rejections": 3751,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 0.0,
+    "rate": 0.19715,
+    "rate_ci95": [
+     0.1916555500165622,
+     0.20273262389164198
+    ],
+    "rejections": 3943,
+    "rejections_look1": 192,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 192,
+   "spotify_reject_zero_se": 180,
+   "unit": "bern_p01-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    35,
+    36
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.5,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 742,
+    "pow2_only": 0,
+    "spotify_only": 2
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0488,
+    "rate_ci95": [
+     0.04585484720036226,
+     0.051877178748466576
+    ],
+    "rejections": 976,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0371,
+    "rate_ci95": [
+     0.03452302700978147,
+     0.03981262860031392
+    ],
+    "rejections": 742,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0372,
+    "rate_ci95": [
+     0.03461962067727654,
+     0.03991600345758746
+    ],
+    "rejections": 744,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    500,
+    500
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 858,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0429,
+    "rate_ci95": [
+     0.04013335219225832,
+     0.0458004922239572
+    ],
+    "rejections": 858,
+    "rejections_look1": 858,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0429,
+    "rate_ci95": [
+     0.04013335219225832,
+     0.0458004922239572
+    ],
+    "rejections": 858,
+    "rejections_look1": 858,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0429,
+    "rate_ci95": [
+     0.04013335219225832,
+     0.0458004922239572
+    ],
+    "rejections": 858,
+    "rejections_look1": 858,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    3,
+    4
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.0078125,
+   "mcnemar_p_holm": 0.53125,
+   "n": 20000,
+   "paired": {
+    "both": 633,
+    "pow2_only": 0,
+    "spotify_only": 8
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0372,
+    "rate_ci95": [
+     0.03461962067727654,
+     0.03991600345758746
+    ],
+    "rejections": 744,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.03165,
+    "rate_ci95": [
+     0.0292670278013556,
+     0.03417036010349333
+    ],
+    "rejections": 633,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.03205,
+    "rate_ci95": [
+     0.029652189536050404,
+     0.034585069951840144
+    ],
+    "rejections": 641,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    1143,
+    286
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1573,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.00011203540086929046,
+    "rate": 0.0572,
+    "rate_ci95": [
+     0.05402114529504058,
+     0.06050832081241915
+    ],
+    "rejections": 1144,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 5.496917529942888e-65,
+    "rate": 0.07865,
+    "rate_ci95": [
+     0.07495570626022686,
+     0.08246731706766872
+    ],
+    "rejections": 1573,
+    "rejections_look1": 306,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 5.496917529942888e-65,
+    "rate": 0.07865,
+    "rate_ci95": [
+     0.07495570626022686,
+     0.08246731706766872
+    ],
+    "rejections": 1573,
+    "rejections_look1": 306,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    16000,
+    4000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1078,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.26229437212894274,
+    "rate": 0.0539,
+    "rate_ci95": [
+     0.05081037930882553,
+     0.05712008906005041
+    ],
+    "rejections": 1078,
+    "rejections_look1": 1078,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.23670467728709468,
+    "rate": 0.0539,
+    "rate_ci95": [
+     0.05081037930882553,
+     0.05712008906005041
+    ],
+    "rejections": 1078,
+    "rejections_look1": 1078,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 0.23670467728709468,
+    "rate": 0.0539,
+    "rate_ci95": [
+     0.05081037930882553,
+     0.05712008906005041
+    ],
+    "rejections": 1078,
+    "rejections_look1": 1078,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    114,
+    29
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.5,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1849,
+    "pow2_only": 0,
+    "spotify_only": 2
+   },
+   "ref.gst_obf": {
+    "holm_p": 3.2628404092421604e-07,
+    "rate": 0.059,
+    "rate_ci95": [
+     0.05577375884095465,
+     0.062355162160867186
+    ],
+    "rejections": 1180,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 6.39667504140771e-134,
+    "rate": 0.09245,
+    "rate_ci95": [
+     0.08847003797156193,
+     0.0965488825304287
+    ],
+    "rejections": 1849,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.702536257695785e-134,
+    "rate": 0.09255,
+    "rate_ci95": [
+     0.08856807427107838,
+     0.09665081658187014
+    ],
+    "rejections": 1851,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    714,
+    715
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 970,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0486,
+    "rate_ci95": [
+     0.04566068803598922,
+     0.05167139923871963
+    ],
+    "rejections": 972,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0485,
+    "rate_ci95": [
+     0.04556361367675368,
+     0.05156850426844107
+    ],
+    "rejections": 970,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0485,
+    "rate_ci95": [
+     0.04556361367675368,
+     0.05156850426844107
+    ],
+    "rejections": 970,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    10000,
+    10000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 960,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.048,
+    "rate_ci95": [
+     0.04507829452110123,
+     0.05105397685301719
+    ],
+    "rejections": 960,
+    "rejections_look1": 960,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.048,
+    "rate_ci95": [
+     0.04507829452110123,
+     0.05105397685301719
+    ],
+    "rejections": 960,
+    "rejections_look1": 960,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.048,
+    "rate_ci95": [
+     0.04507829452110123,
+     0.05105397685301719
+    ],
+    "rejections": 960,
+    "rejections_look1": 960,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    71,
+    72
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.5,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 967,
+    "pow2_only": 0,
+    "spotify_only": 2
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0487,
+    "rate_ci95": [
+     0.04575776588058664,
+     0.05177429072867541
+    ],
+    "rejections": 974,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04835,
+    "rate_ci95": [
+     0.045418008695358975,
+     0.051414155265069345
+    ],
+    "rejections": 967,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04845,
+    "rate_ci95": [
+     0.04551507780734325,
+     0.05151705547499218
+    ],
+    "rejections": 969,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p01-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    57,
+    14
+   ],
+   "matches_run": true,
+   "mcnemar_p": 3.3881317890172014e-21,
+   "mcnemar_p_holm": 2.371692252312041e-19,
+   "n": 20000,
+   "paired": {
+    "both": 1918,
+    "pow2_only": 0,
+    "spotify_only": 69
+   },
+   "ref.gst_obf": {
+    "holm_p": 7.61768690104498e-24,
+    "rate": 0.0668,
+    "rate_ci95": [
+     0.06337790022319212,
+     0.07034866946542863
+    ],
+    "rejections": 1336,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 2.508599540363522e-154,
+    "rate": 0.0959,
+    "rate_ci95": [
+     0.09185310028796204,
+     0.10006479789884722
+    ],
+    "rejections": 1918,
+    "rejections_look1": 40,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 6.110315629500855e-176,
+    "rate": 0.09935,
+    "rate_ci95": [
+     0.09523777856391878,
+     0.10357909842829113
+    ],
+    "rejections": 1987,
+    "rejections_look1": 98,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    800,
+    200
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.25,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1091,
+    "pow2_only": 0,
+    "spotify_only": 3
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.08008482586454803,
+    "rate": 0.05455,
+    "rate_ci95": [
+     0.05144255236781524,
+     0.05778771826916318
+    ],
+    "rejections": 1091,
+    "rejections_look1": 1091,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.07263507462133426,
+    "rate": 0.05455,
+    "rate_ci95": [
+     0.05144255236781524,
+     0.05778771826916318
+    ],
+    "rejections": 1091,
+    "rejections_look1": 1091,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 0.05347736032711194,
+    "rate": 0.0547,
+    "rate_ci95": [
+     0.05158845628714745,
+     0.05794176874229121
+    ],
+    "rejections": 1094,
+    "rejections_look1": 1094,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    6,
+    1
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.0,
+   "mcnemar_p_holm": 0.0,
+   "n": 20000,
+   "paired": {
+    "both": 2296,
+    "pow2_only": 0,
+    "spotify_only": 1780
+   },
+   "ref.gst_obf": {
+    "holm_p": 9.921697539424955e-35,
+    "rate": 0.0705,
+    "rate_ci95": [
+     0.06698987940876823,
+     0.07413558008434826
+    ],
+    "rejections": 1410,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 2.1619653476056996e-286,
+    "rate": 0.1148,
+    "rate_ci95": [
+     0.11041322920545595,
+     0.11929908610439116
+    ],
+    "rejections": 2296,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 0.0,
+    "rate": 0.2038,
+    "rate_ci95": [
+     0.1982356337973898,
+     0.2094505976430173
+    ],
+    "rejections": 4076,
+    "rejections_look1": 1812,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 1812,
+   "spotify_reject_zero_se": 1079,
+   "unit": "bern_p10-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    35,
+    36
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.03125,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1033,
+    "pow2_only": 0,
+    "spotify_only": 6
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05075,
+    "rate_ci95": [
+     0.047748613355905384,
+     0.05388281568138255
+    ],
+    "rejections": 1015,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.05165,
+    "rate_ci95": [
+     0.0486230838445168,
+     0.05480807028617711
+    ],
+    "rejections": 1033,
+    "rejections_look1": 3,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05195,
+    "rate_ci95": [
+     0.04891463186534412,
+     0.05511643070860932
+    ],
+    "rejections": 1039,
+    "rejections_look1": 3,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    500,
+    500
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1048,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0524,
+    "rate_ci95": [
+     0.04935200732496706,
+     0.05557891798582068
+    ],
+    "rejections": 1048,
+    "rejections_look1": 1048,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0524,
+    "rate_ci95": [
+     0.04935200732496706,
+     0.05557891798582068
+    ],
+    "rejections": 1048,
+    "rejections_look1": 1048,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05245,
+    "rate_ci95": [
+     0.049400608527291084,
+     0.05563030153729601
+    ],
+    "rejections": 1049,
+    "rejections_look1": 1049,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    3,
+    4
+   ],
+   "matches_run": true,
+   "mcnemar_p": 5.960464477539063e-08,
+   "mcnemar_p_holm": 4.112720489501953e-06,
+   "n": 20000,
+   "paired": {
+    "both": 987,
+    "pow2_only": 0,
+    "spotify_only": 25
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0505,
+    "rate_ci95": [
+     0.04750575171590377,
+     0.05362575374873553
+    ],
+    "rejections": 1010,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04935,
+    "rate_ci95": [
+     0.046388856127737285,
+     0.05244300127720196
+    ],
+    "rejections": 987,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0506,
+    "rate_ci95": [
+     0.047602893904721846,
+     0.053728580985559035
+    ],
+    "rejections": 1012,
+    "rejections_look1": 15,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 15,
+   "spotify_reject_zero_se": 15,
+   "unit": "bern_p10-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    1143,
+    286
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1039,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0493,
+    "rate_ci95": [
+     0.04634030557408589,
+     0.05239156714689895
+    ],
+    "rejections": 986,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.05195,
+    "rate_ci95": [
+     0.04891463186534412,
+     0.05511643070860932
+    ],
+    "rejections": 1039,
+    "rejections_look1": 12,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05195,
+    "rate_ci95": [
+     0.04891463186534412,
+     0.05511643070860932
+    ],
+    "rejections": 1039,
+    "rejections_look1": 12,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    16000,
+    4000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 971,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04855,
+    "rate_ci95": [
+     0.045612150420062704,
+     0.0516199521892576
+    ],
+    "rejections": 971,
+    "rejections_look1": 971,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04855,
+    "rate_ci95": [
+     0.045612150420062704,
+     0.0516199521892576
+    ],
+    "rejections": 971,
+    "rejections_look1": 971,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0486,
+    "rate_ci95": [
+     0.04566068803598922,
+     0.05167139923871963
+    ],
+    "rejections": 972,
+    "rejections_look1": 972,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    114,
+    29
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.125,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1129,
+    "pow2_only": 0,
+    "spotify_only": 4
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05065,
+    "rate_ci95": [
+     0.047651466233875506,
+     0.05377999337093791
+    ],
+    "rejections": 1013,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.0008708811440316393,
+    "rate": 0.05645,
+    "rate_ci95": [
+     0.05329115201841568,
+     0.0597385415337996
+    ],
+    "rejections": 1129,
+    "rejections_look1": 15,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 0.0005044342514280743,
+    "rate": 0.05665,
+    "rate_ci95": [
+     0.05348580150957551,
+     0.0599438313718264
+    ],
+    "rejections": 1133,
+    "rejections_look1": 15,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    714,
+    715
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1034,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05215,
+    "rate_ci95": [
+     0.04910901307910331,
+     0.05532198847842442
+    ],
+    "rejections": 1043,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0517,
+    "rate_ci95": [
+     0.04867167318985647,
+     0.05485946567868637
+    ],
+    "rejections": 1034,
+    "rejections_look1": 6,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0517,
+    "rate_ci95": [
+     0.04867167318985647,
+     0.05485946567868637
+    ],
+    "rejections": 1034,
+    "rejections_look1": 6,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    10000,
+    10000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1080,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.22441872804747542,
+    "rate": 0.054,
+    "rate_ci95": [
+     0.05090762848119267,
+     0.05722280945678435
+    ],
+    "rejections": 1080,
+    "rejections_look1": 1080,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.20304551585247776,
+    "rate": 0.054,
+    "rate_ci95": [
+     0.05090762848119267,
+     0.05722280945678435
+    ],
+    "rejections": 1080,
+    "rejections_look1": 1080,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 0.20304551585247776,
+    "rate": 0.054,
+    "rate_ci95": [
+     0.05090762848119267,
+     0.05722280945678435
+    ],
+    "rejections": 1080,
+    "rejections_look1": 1080,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    71,
+    72
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1020,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05215,
+    "rate_ci95": [
+     0.04910901307910331,
+     0.05532198847842442
+    ],
+    "rejections": 1043,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.051,
+    "rate_ci95": [
+     0.0479914954792011,
+     0.05413985715903338
+    ],
+    "rejections": 1020,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05105,
+    "rate_ci95": [
+     0.0480400743492922,
+     0.05419126301249717
+    ],
+    "rejections": 1021,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "bern_p10-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    57,
+    14
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 2004,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 7.339578693669278e-103,
+    "rate": 0.08675,
+    "rate_ci95": [
+     0.08288439223259156,
+     0.09073622005629431
+    ],
+    "rejections": 1735,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.952065499347753e-181,
+    "rate": 0.1002,
+    "rate_ci95": [
+     0.09607192419519137,
+     0.10444470135939318
+    ],
+    "rejections": 2004,
+    "rejections_look1": 42,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.952065499347753e-181,
+    "rate": 0.1002,
+    "rate_ci95": [
+     0.09607192419519137,
+     0.10444470135939318
+    ],
+    "rejections": 2004,
+    "rejections_look1": 42,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    800,
+    200
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1417,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 7.58197794561202e-36,
+    "rate": 0.07085,
+    "rate_ci95": [
+     0.0673317028416433,
+     0.07449365178127061
+    ],
+    "rejections": 1417,
+    "rejections_look1": 1417,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 7.009753194999792e-36,
+    "rate": 0.07085,
+    "rate_ci95": [
+     0.0673317028416433,
+     0.07449365178127061
+    ],
+    "rejections": 1417,
+    "rejections_look1": 1417,
+    "violation": true
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 7.009753194999792e-36,
+    "rate": 0.07085,
+    "rate_ci95": [
+     0.0673317028416433,
+     0.07449365178127061
+    ],
+    "rejections": 1417,
+    "rejections_look1": 1417,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    6,
+    1
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 2071,
+    "pow2_only": 2,
+    "spotify_only": 2
+   },
+   "ref.gst_obf": {
+    "holm_p": 8.234253441098002e-113,
+    "rate": 0.08865,
+    "rate_ci95": [
+     0.0847457345130939,
+     0.09267431344146505
+    ],
+    "rejections": 1773,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.7877324369698096e-204,
+    "rate": 0.10365,
+    "rate_ci95": [
+     0.09945851275463657,
+     0.10795709287217549
+    ],
+    "rejections": 2073,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.7877324369698096e-204,
+    "rate": 0.10365,
+    "rate_ci95": [
+     0.09945851275463657,
+     0.10795709287217549
+    ],
+    "rejections": 2073,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    35,
+    36
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 745,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04015,
+    "rate_ci95": [
+     0.037471353241775404,
+     0.04296334650641369
+    ],
+    "rejections": 803,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.03725,
+    "rate_ci95": [
+     0.03466791942958155,
+     0.0399676889713322
+    ],
+    "rejections": 745,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.03725,
+    "rate_ci95": [
+     0.03466791942958155,
+     0.0399676889713322
+    ],
+    "rejections": 745,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    500,
+    500
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 833,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04165,
+    "rate_ci95": [
+     0.0389229439568676,
+     0.04451128855059224
+    ],
+    "rejections": 833,
+    "rejections_look1": 833,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04165,
+    "rate_ci95": [
+     0.0389229439568676,
+     0.04451128855059224
+    ],
+    "rejections": 833,
+    "rejections_look1": 833,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04165,
+    "rate_ci95": [
+     0.0389229439568676,
+     0.04451128855059224
+    ],
+    "rejections": 833,
+    "rejections_look1": 833,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    3,
+    4
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 743,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.03725,
+    "rate_ci95": [
+     0.03466791942958155,
+     0.0399676889713322
+    ],
+    "rejections": 745,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.03715,
+    "rate_ci95": [
+     0.03457132320318245,
+     0.03986431666807271
+    ],
+    "rejections": 743,
+    "rejections_look1": 64,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.03715,
+    "rate_ci95": [
+     0.03457132320318245,
+     0.03986431666807271
+    ],
+    "rejections": 743,
+    "rejections_look1": 64,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    1143,
+    286
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1330,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 2.8303763609316496e-09,
+    "rate": 0.06025,
+    "rate_ci95": [
+     0.056991358841079795,
+     0.06363718421483042
+    ],
+    "rejections": 1205,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 4.446874392731437e-23,
+    "rate": 0.0665,
+    "rate_ci95": [
+     0.0630851675738693,
+     0.07004149226286134
+    ],
+    "rejections": 1330,
+    "rejections_look1": 36,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 3.2756805093661445e-23,
+    "rate": 0.06655,
+    "rate_ci95": [
+     0.0631339549519637,
+     0.07009268985863713
+    ],
+    "rejections": 1331,
+    "rejections_look1": 36,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    16000,
+    4000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1076,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 0.305293658956577,
+    "rate": 0.0538,
+    "rate_ci95": [
+     0.050713133145630605,
+     0.05701736565804554
+    ],
+    "rejections": 1076,
+    "rejections_look1": 1076,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.2747642930609193,
+    "rate": 0.0538,
+    "rate_ci95": [
+     0.050713133145630605,
+     0.05701736565804554
+    ],
+    "rejections": 1076,
+    "rejections_look1": 1076,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 0.2747642930609193,
+    "rate": 0.0538,
+    "rate_ci95": [
+     0.050713133145630605,
+     0.05701736565804554
+    ],
+    "rejections": 1076,
+    "rejections_look1": 1076,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    114,
+    29
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1374,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.955330341968489e-10,
+    "rate": 0.0609,
+    "rate_ci95": [
+     0.057624670417206675,
+     0.06430367629131874
+    ],
+    "rejections": 1218,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 3.10273595592178e-29,
+    "rate": 0.0687,
+    "rate_ci95": [
+     0.0652323338885416,
+     0.07229366533269971
+    ],
+    "rejections": 1374,
+    "rejections_look1": 5,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 2.2079001133221447e-29,
+    "rate": 0.06875,
+    "rate_ci95": [
+     0.0652811453449581,
+     0.07234483887466527
+    ],
+    "rejections": 1375,
+    "rejections_look1": 5,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    714,
+    715
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 948,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04825,
+    "rate_ci95": [
+     0.045320943094424575,
+     0.05131125154920048
+    ],
+    "rejections": 965,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0474,
+    "rate_ci95": [
+     0.044496028724498295,
+     0.05043642693611834
+    ],
+    "rejections": 948,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0474,
+    "rate_ci95": [
+     0.044496028724498295,
+     0.05043642693611834
+    ],
+    "rejections": 948,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    10000,
+    10000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 992,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0496,
+    "rate_ci95": [
+     0.046631621659845884,
+     0.0527001591829993
+    ],
+    "rejections": 992,
+    "rejections_look1": 992,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0496,
+    "rate_ci95": [
+     0.046631621659845884,
+     0.0527001591829993
+    ],
+    "rejections": 992,
+    "rejections_look1": 992,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0496,
+    "rate_ci95": [
+     0.046631621659845884,
+     0.0527001591829993
+    ],
+    "rejections": 992,
+    "rejections_look1": 992,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    71,
+    72
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 902,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0473,
+    "rate_ci95": [
+     0.04439899700328168,
+     0.05033348939035184
+    ],
+    "rejections": 946,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0451,
+    "rate_ci95": [
+     0.04226523557814623,
+     0.048067928357184646
+    ],
+    "rejections": 902,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04515,
+    "rate_ci95": [
+     0.042313709795264214,
+     0.04811943871009267
+    ],
+    "rejections": 903,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "lognorm-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    57,
+    14
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1095,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0517,
+    "rate_ci95": [
+     0.04867167318985647,
+     0.05485946567868637
+    ],
+    "rejections": 1034,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 0.04943825947302374,
+    "rate": 0.05475,
+    "rate_ci95": [
+     0.051637092401758365,
+     0.057993117427050773
+    ],
+    "rejections": 1095,
+    "rejections_look1": 25,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 0.04943825947302374,
+    "rate": 0.05475,
+    "rate_ci95": [
+     0.051637092401758365,
+     0.057993117427050773
+    ],
+    "rejections": 1095,
+    "rejections_look1": 25,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    800,
+    200
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 999,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04995,
+    "rate_ci95": [
+     0.046971528922196755,
+     0.05306014478394583
+    ],
+    "rejections": 999,
+    "rejections_look1": 999,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04995,
+    "rate_ci95": [
+     0.046971528922196755,
+     0.05306014478394583
+    ],
+    "rejections": 999,
+    "rejections_look1": 999,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04995,
+    "rate_ci95": [
+     0.046971528922196755,
+     0.05306014478394583
+    ],
+    "rejections": 999,
+    "rejections_look1": 999,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    6,
+    1
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1306,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0516,
+    "rate_ci95": [
+     0.048574495298314514,
+     0.054756674095614244
+    ],
+    "rejections": 1032,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 5.253426172670197e-20,
+    "rate": 0.0653,
+    "rate_ci95": [
+     0.06191443988911663,
+     0.06881258075137657
+    ],
+    "rejections": 1306,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 5.253426172670197e-20,
+    "rate": 0.0653,
+    "rate_ci95": [
+     0.06191443988911663,
+     0.06881258075137657
+    ],
+    "rejections": 1306,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    35,
+    36
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1031,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05205,
+    "rate_ci95": [
+     0.04901182089133905,
+     0.055219211172274976
+    ],
+    "rejections": 1041,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.05155,
+    "rate_ci95": [
+     0.04852590755234834,
+     0.054705277105901604
+    ],
+    "rejections": 1031,
+    "rejections_look1": 9,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05155,
+    "rate_ci95": [
+     0.04852590755234834,
+     0.054705277105901604
+    ],
+    "rejections": 1031,
+    "rejections_look1": 9,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    500,
+    500
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1015,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05075,
+    "rate_ci95": [
+     0.047748613355905384,
+     0.05388281568138255
+    ],
+    "rejections": 1015,
+    "rejections_look1": 1015,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.05075,
+    "rate_ci95": [
+     0.047748613355905384,
+     0.05388281568138255
+    ],
+    "rejections": 1015,
+    "rejections_look1": 1015,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05075,
+    "rate_ci95": [
+     0.047748613355905384,
+     0.05388281568138255
+    ],
+    "rejections": 1015,
+    "rejections_look1": 1015,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    3,
+    4
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1174,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0518,
+    "rate_ci95": [
+     0.04876885427356622,
+     0.054962254073915376
+    ],
+    "rejections": 1036,
+    "rejections_look1": 2,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 8.44433059484093e-07,
+    "rate": 0.0587,
+    "rate_ci95": [
+     0.055481595969284876,
+     0.06204741581115686
+    ],
+    "rejections": 1174,
+    "rejections_look1": 125,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 8.44433059484093e-07,
+    "rate": 0.0587,
+    "rate_ci95": [
+     0.055481595969284876,
+     0.06204741581115686
+    ],
+    "rejections": 1174,
+    "rejections_look1": 125,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    1143,
+    286
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 998,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0499,
+    "rate_ci95": [
+     0.04692296821818434,
+     0.053008720789646684
+    ],
+    "rejections": 998,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0499,
+    "rate_ci95": [
+     0.04692296821818434,
+     0.053008720789646684
+    ],
+    "rejections": 998,
+    "rejections_look1": 3,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0499,
+    "rate_ci95": [
+     0.04692296821818434,
+     0.053008720789646684
+    ],
+    "rejections": 998,
+    "rejections_look1": 3,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    16000,
+    4000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 982,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0491,
+    "rate_ci95": [
+     0.04614611190969548,
+     0.052185822087662405
+    ],
+    "rejections": 982,
+    "rejections_look1": 982,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0491,
+    "rate_ci95": [
+     0.04614611190969548,
+     0.052185822087662405
+    ],
+    "rejections": 982,
+    "rejections_look1": 982,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0491,
+    "rate_ci95": [
+     0.04614611190969548,
+     0.052185822087662405
+    ],
+    "rejections": 982,
+    "rejections_look1": 982,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    114,
+    29
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 999,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04985,
+    "rate_ci95": [
+     0.046874408353397776,
+     0.052957295957301365
+    ],
+    "rejections": 997,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04995,
+    "rate_ci95": [
+     0.046971528922196755,
+     0.05306014478394583
+    ],
+    "rejections": 999,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04995,
+    "rate_ci95": [
+     0.046971528922196755,
+     0.05306014478394583
+    ],
+    "rejections": 999,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    714,
+    715
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 976,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0493,
+    "rate_ci95": [
+     0.04634030557408589,
+     0.05239156714689895
+    ],
+    "rejections": 986,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0488,
+    "rate_ci95": [
+     0.04585484720036226,
+     0.051877178748466576
+    ],
+    "rejections": 976,
+    "rejections_look1": 7,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0488,
+    "rate_ci95": [
+     0.04585484720036226,
+     0.051877178748466576
+    ],
+    "rejections": 976,
+    "rejections_look1": 7,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    10000,
+    10000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 995,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04975,
+    "rate_ci95": [
+     0.04677729114629246,
+     0.05285444377369516
+    ],
+    "rejections": 995,
+    "rejections_look1": 995,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04975,
+    "rate_ci95": [
+     0.04677729114629246,
+     0.05285444377369516
+    ],
+    "rejections": 995,
+    "rejections_look1": 995,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04975,
+    "rate_ci95": [
+     0.04677729114629246,
+     0.05285444377369516
+    ],
+    "rejections": 995,
+    "rejections_look1": 995,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    71,
+    72
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 986,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0489,
+    "rate_ci95": [
+     0.04595193198518415,
+     0.05198006330819969
+    ],
+    "rejections": 978,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0493,
+    "rate_ci95": [
+     0.04634030557408589,
+     0.05239156714689895
+    ],
+    "rejections": 986,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0493,
+    "rate_ci95": [
+     0.04634030557408589,
+     0.05239156714689895
+    ],
+    "rejections": 986,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "normal-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    57,
+    14
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1994,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 3.194380239647086e-125,
+    "rate": 0.0908,
+    "rate_ci95": [
+     0.08685264643102608,
+     0.09486676343088893
+    ],
+    "rejections": 1816,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 6.876221478042268e-179,
+    "rate": 0.0997,
+    "rate_ci95": [
+     0.09558123902808896,
+     0.10393553442351244
+    ],
+    "rejections": 1994,
+    "rejections_look1": 31,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 6.876221478042268e-179,
+    "rate": 0.0997,
+    "rate_ci95": [
+     0.09558123902808896,
+     0.10393553442351244
+    ],
+    "rejections": 1994,
+    "rejections_look1": 31,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    800,
+    200
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1513,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.366495228034027e-53,
+    "rate": 0.07565,
+    "rate_ci95": [
+     0.07202203211488825,
+     0.07940188662238189
+    ],
+    "rejections": 1513,
+    "rejections_look1": 1513,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0931961824272216e-53,
+    "rate": 0.07565,
+    "rate_ci95": [
+     0.07202203211488825,
+     0.07940188662238189
+    ],
+    "rejections": 1513,
+    "rejections_look1": 1513,
+    "violation": true
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0931961824272216e-53,
+    "rate": 0.07565,
+    "rate_ci95": [
+     0.07202203211488825,
+     0.07940188662238189
+    ],
+    "rejections": 1513,
+    "rejections_look1": 1513,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    6,
+    1
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 2055,
+    "pow2_only": 1,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.4570053519381647e-117,
+    "rate": 0.0894,
+    "rate_ci95": [
+     0.08548062572268925,
+     0.09343919958303815
+    ],
+    "rejections": 1788,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 2.321350153771697e-199,
+    "rate": 0.1028,
+    "rate_ci95": [
+     0.09862399812793109,
+     0.10709185869661468
+    ],
+    "rejections": 2056,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 5.055608078892164e-199,
+    "rate": 0.10275,
+    "rate_ci95": [
+     0.09857491180590167,
+     0.10704095979675297
+    ],
+    "rejections": 2055,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    35,
+    36
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 559,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.03185,
+    "rate_ci95": [
+     0.029459595867164387,
+     0.034377727800520924
+    ],
+    "rejections": 637,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.02795,
+    "rate_ci95": [
+     0.025709448230558186,
+     0.030329139641188805
+    ],
+    "rejections": 559,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.02795,
+    "rate_ci95": [
+     0.025709448230558186,
+     0.030329139641188805
+    ],
+    "rejections": 559,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    500,
+    500
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 722,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0361,
+    "rate_ci95": [
+     0.033557375984845865,
+     0.03877859492924371
+    ],
+    "rejections": 722,
+    "rejections_look1": 722,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0361,
+    "rate_ci95": [
+     0.033557375984845865,
+     0.03877859492924371
+    ],
+    "rejections": 722,
+    "rejections_look1": 722,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0361,
+    "rate_ci95": [
+     0.033557375984845865,
+     0.03877859492924371
+    ],
+    "rejections": 722,
+    "rejections_look1": 722,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    3,
+    4
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 556,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.02815,
+    "rate_ci95": [
+     0.025901495913061207,
+     0.030537026473548223
+    ],
+    "rejections": 563,
+    "rejections_look1": 5,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0278,
+    "rate_ci95": [
+     0.025565432767939524,
+     0.030173204269617202
+    ],
+    "rejections": 556,
+    "rejections_look1": 63,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0278,
+    "rate_ci95": [
+     0.025565432767939524,
+     0.030173204269617202
+    ],
+    "rejections": 556,
+    "rejections_look1": 63,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    1143,
+    286
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1624,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 4.152477260083111e-49,
+    "rate": 0.07445,
+    "rate_ci95": [
+     0.07084902966743029,
+     0.0781752476511975
+    ],
+    "rejections": 1489,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 7.391839515501173e-77,
+    "rate": 0.0812,
+    "rate_ci95": [
+     0.0774505899863063,
+     0.08507167333541661
+    ],
+    "rejections": 1624,
+    "rejections_look1": 22,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 7.391839515501173e-77,
+    "rate": 0.0812,
+    "rate_ci95": [
+     0.0774505899863063,
+     0.08507167333541661
+    ],
+    "rejections": 1624,
+    "rejections_look1": 22,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    16000,
+    4000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1302,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 2.4934659298296427e-20,
+    "rate": 0.0651,
+    "rate_ci95": [
+     0.061719350553024736,
+     0.06860773025500644
+    ],
+    "rejections": 1302,
+    "rejections_look1": 1302,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 2.4934659298296427e-20,
+    "rate": 0.0651,
+    "rate_ci95": [
+     0.061719350553024736,
+     0.06860773025500644
+    ],
+    "rejections": 1302,
+    "rejections_look1": 1302,
+    "violation": true
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 2.4934659298296427e-20,
+    "rate": 0.0651,
+    "rate_ci95": [
+     0.061719350553024736,
+     0.06860773025500644
+    ],
+    "rejections": 1302,
+    "rejections_look1": 1302,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    114,
+    29
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1673,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 7.145941521746603e-48,
+    "rate": 0.0741,
+    "rate_ci95": [
+     0.0705069556450572,
+     0.07781742630701301
+    ],
+    "rejections": 1482,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 3.260303826246344e-88,
+    "rate": 0.08365,
+    "rate_ci95": [
+     0.07984867745489446,
+     0.08757285653487347
+    ],
+    "rejections": 1673,
+    "rejections_look1": 2,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.8769715938474744e-88,
+    "rate": 0.0837,
+    "rate_ci95": [
+     0.07989762835537492,
+     0.08762389075850313
+    ],
+    "rejections": 1674,
+    "rejections_look1": 2,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    714,
+    715
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 598,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0334,
+    "rate_ci95": [
+     0.030952849204829515,
+     0.035983978504688284
+    ],
+    "rejections": 668,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.0299,
+    "rate_ci95": [
+     0.02758318643332906,
+     0.03235476613791884
+    ],
+    "rejections": 598,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.02995,
+    "rate_ci95": [
+     0.027631267208698684,
+     0.03240666916131642
+    ],
+    "rejections": 599,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    10000,
+    10000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 733,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.03665,
+    "rate_ci95": [
+     0.03408841931407036,
+     0.03934737805715792
+    ],
+    "rejections": 733,
+    "rejections_look1": 733,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.03665,
+    "rate_ci95": [
+     0.03408841931407036,
+     0.03934737805715792
+    ],
+    "rejections": 733,
+    "rejections_look1": 733,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.03665,
+    "rate_ci95": [
+     0.03408841931407036,
+     0.03934737805715792
+    ],
+    "rejections": 733,
+    "rejections_look1": 733,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_stress",
+   "look1_arms": [
+    71,
+    72
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 537,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.03005,
+    "rate_ci95": [
+     0.0277274340043741,
+     0.032510469975684866
+    ],
+    "rejections": 601,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.02685,
+    "rate_ci95": [
+     0.024653748246603487,
+     0.029185201249733898
+    ],
+    "rejections": 537,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.0269,
+    "rate_ci95": [
+     0.024701713505420057,
+     0.029237219497924335
+    ],
+    "rejections": 538,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a15-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    57,
+    14
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1702,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 7.344279327126543e-47,
+    "rate": 0.07405,
+    "rate_ci95": [
+     0.0704580898521131,
+     0.07776630704936321
+    ],
+    "rejections": 1481,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.4209043544981265e-94,
+    "rate": 0.0851,
+    "rate_ci95": [
+     0.0812684179522078,
+     0.08905268476856508
+    ],
+    "rejections": 1702,
+    "rejections_look1": 58,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.4209043544981265e-94,
+    "rate": 0.0851,
+    "rate_ci95": [
+     0.0812684179522078,
+     0.08905268476856508
+    ],
+    "rejections": 1702,
+    "rejections_look1": 58,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    800,
+    200
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1219,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.6121996462240375e-10,
+    "rate": 0.06095,
+    "rate_ci95": [
+     0.05767339114657369,
+     0.06435494046339714
+    ],
+    "rejections": 1219,
+    "rejections_look1": 1219,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.3864916957526724e-10,
+    "rate": 0.06095,
+    "rate_ci95": [
+     0.05767339114657369,
+     0.06435494046339714
+    ],
+    "rejections": 1219,
+    "rejections_look1": 1219,
+    "violation": true
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.3864916957526724e-10,
+    "rate": 0.06095,
+    "rate_ci95": [
+     0.05767339114657369,
+     0.06435494046339714
+    ],
+    "rejections": 1219,
+    "rejections_look1": 1219,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    6,
+    1
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1857,
+    "pow2_only": 0,
+    "spotify_only": 1
+   },
+   "ref.gst_obf": {
+    "holm_p": 3.094069603641839e-53,
+    "rate": 0.07575,
+    "rate_ci95": [
+     0.07211979458107122,
+     0.07950409428552972
+    ],
+    "rejections": 1515,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 3.2255704174473296e-136,
+    "rate": 0.09285,
+    "rate_ci95": [
+     0.08886219170305769,
+     0.09695661020891456
+    ],
+    "rejections": 1857,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.6567040213659535e-136,
+    "rate": 0.0929,
+    "rate_ci95": [
+     0.08891121251680288,
+     0.0970075745725666
+    ],
+    "rejections": 1858,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n1000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    35,
+    36
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 839,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0448,
+    "rate_ci95": [
+     0.04197441068639299,
+     0.047758845860755544
+    ],
+    "rejections": 896,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04195,
+    "rate_ci95": [
+     0.039213381088987344,
+     0.04482075817452862
+    ],
+    "rejections": 839,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04195,
+    "rate_ci95": [
+     0.039213381088987344,
+     0.04482075817452862
+    ],
+    "rejections": 839,
+    "rejections_look1": 1,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    500,
+    500
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 947,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04735,
+    "rate_ci95": [
+     0.04444751241174309,
+     0.05038495861471019
+    ],
+    "rejections": 947,
+    "rejections_look1": 947,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04735,
+    "rate_ci95": [
+     0.04444751241174309,
+     0.05038495861471019
+    ],
+    "rejections": 947,
+    "rejections_look1": 947,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04735,
+    "rate_ci95": [
+     0.04444751241174309,
+     0.05038495861471019
+    ],
+    "rejections": 947,
+    "rejections_look1": 947,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    3,
+    4
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 860,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0422,
+    "rate_ci95": [
+     0.039455441620033456,
+     0.045078619990101966
+    ],
+    "rejections": 844,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.043,
+    "rate_ci95": [
+     0.040230213333136366,
+     0.04590360008314074
+    ],
+    "rejections": 860,
+    "rejections_look1": 65,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.043,
+    "rate_ci95": [
+     0.040230213333136366,
+     0.04590360008314074
+    ],
+    "rejections": 860,
+    "rejections_look1": 65,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n1000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    1143,
+    286
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1253,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.5502539953009938e-05,
+    "rate": 0.05785,
+    "rate_ci95": [
+     0.054653932141339436,
+     0.061175337000834204
+    ],
+    "rejections": 1157,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 6.09311571526972e-14,
+    "rate": 0.06265,
+    "rate_ci95": [
+     0.0593302676927851,
+     0.06609755098530919
+    ],
+    "rejections": 1253,
+    "rejections_look1": 25,
+    "violation": true
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 6.09311571526972e-14,
+    "rate": 0.06265,
+    "rate_ci95": [
+     0.0593302676927851,
+     0.06609755098530919
+    ],
+    "rejections": 1253,
+    "rejections_look1": 25,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    16000,
+    4000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1057,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.05285,
+    "rate_ci95": [
+     0.049789446206329566,
+     0.05604134192600762
+    ],
+    "rejections": 1057,
+    "rejections_look1": 1057,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.05285,
+    "rate_ci95": [
+     0.049789446206329566,
+     0.05604134192600762
+    ],
+    "rejections": 1057,
+    "rejections_look1": 1057,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.05285,
+    "rate_ci95": [
+     0.049789446206329566,
+     0.05604134192600762
+    ],
+    "rejections": 1057,
+    "rejections_look1": 1057,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    114,
+    29
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 1296,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 5.073111399358642e-06,
+    "rate": 0.0582,
+    "rate_ci95": [
+     0.054994711294938596,
+     0.06153445184657766
+    ],
+    "rejections": 1164,
+    "rejections_look1": 0,
+    "violation": true
+   },
+   "ref.gst_pow2": {
+    "holm_p": 8.617306761697768e-19,
+    "rate": 0.0648,
+    "rate_ci95": [
+     0.06142673386984712,
+     0.06830043720786678
+    ],
+    "rejections": 1296,
+    "rejections_look1": 5,
+    "violation": true
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 8.617306761697768e-19,
+    "rate": 0.0648,
+    "rate_ci95": [
+     0.06142673386984712,
+     0.06830043720786678
+    ],
+    "rejections": 1296,
+    "rejections_look1": 5,
+    "violation": true
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n20000-b20-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    714,
+    715
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 919,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.0467,
+    "rate_ci95": [
+     0.04381688313647777,
+     0.04971578776941507
+    ],
+    "rejections": 934,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04595,
+    "rate_ci95": [
+     0.04308942786564751,
+     0.04894347396290784
+    ],
+    "rejections": 919,
+    "rejections_look1": 2,
+    "violation": false
+   },
+   "schedule": "daily14",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04595,
+    "rate_ci95": [
+     0.04308942786564751,
+     0.04894347396290784
+    ],
+    "rejections": 919,
+    "rejections_look1": 2,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    10000,
+    10000
+   ],
+   "matches_run": true,
+   "mcnemar_p": 1.0,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 941,
+    "pow2_only": 0,
+    "spotify_only": 0
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04705,
+    "rate_ci95": [
+     0.04415643357321948,
+     0.05007612967659331
+    ],
+    "rejections": 941,
+    "rejections_look1": 941,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04705,
+    "rate_ci95": [
+     0.04415643357321948,
+     0.05007612967659331
+    ],
+    "rejections": 941,
+    "rejections_look1": 941,
+    "violation": false
+   },
+   "schedule": "fixed1",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04705,
+    "rate_ci95": [
+     0.04415643357321948,
+     0.05007612967659331
+    ],
+    "rejections": 941,
+    "rejections_look1": 941,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n20000-b50-aa"
+  },
+  {
+   "family": "fpr_primary",
+   "look1_arms": [
+    71,
+    72
+   ],
+   "matches_run": true,
+   "mcnemar_p": 0.125,
+   "mcnemar_p_holm": 1.0,
+   "n": 20000,
+   "paired": {
+    "both": 881,
+    "pow2_only": 0,
+    "spotify_only": 4
+   },
+   "ref.gst_obf": {
+    "holm_p": 1.0,
+    "rate": 0.04625,
+    "rate_ci95": [
+     0.043380384763843545,
+     0.04925242465729782
+    ],
+    "rejections": 925,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "ref.gst_pow2": {
+    "holm_p": 1.0,
+    "rate": 0.04405,
+    "rate_ci95": [
+     0.04124750334577795,
+     0.04698598497564081
+    ],
+    "rejections": 881,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "schedule": "stream140",
+   "spotify.gst": {
+    "holm_p": 1.0,
+    "rate": 0.04425,
+    "rate_ci95": [
+     0.04144132347056798,
+     0.0471921030096539
+    ],
+    "rejections": 885,
+    "rejections_look1": 0,
+    "violation": false
+   },
+   "spotify_reject_where_ref_no_result": 0,
+   "spotify_reject_zero_se": 0,
+   "unit": "pareto_a25-n20000-b50-aa"
+  }
+ ],
+ "config_hash": "dde79da82e86a243",
+ "master_seed": 20261023,
+ "r_aa": 20000,
+ "study": "full",
+ "violations": {
+  "ref.gst_obf": {
+   "fpr_primary": 17,
+   "fpr_primary_cells": 60,
+   "fpr_stress": 6,
+   "fpr_stress_cells": 12
+  },
+  "ref.gst_pow2": {
+   "fpr_primary": 21,
+   "fpr_primary_cells": 60,
+   "fpr_stress": 6,
+   "fpr_stress_cells": 12
+  },
+  "spotify.gst": {
+   "fpr_primary": 21,
+   "fpr_primary_cells": 60,
+   "fpr_stress": 6,
+   "fpr_stress_cells": 12
+  }
+ }
+}

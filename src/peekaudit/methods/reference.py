@@ -1,4 +1,4 @@
-"""Reference methods on the absolute scale (DESIGN 4.4): naive z, mSPRT, ACS, LD-OBF GST.
+"""Reference methods on the absolute scale (DESIGN 4.4): naive z, mSPRT, ACS, two GSTs.
 
 All use the plug-in variance V = s_A^2/n_A + s_B^2/n_B with n - 1 variances (delta method
 for ratio metrics, see :func:`peekaudit.methods.base.sample_moments`). A look with n <= 1 in
@@ -12,7 +12,7 @@ from functools import lru_cache
 import numpy as np
 from scipy.stats import norm
 
-from peekaudit.gst import lan_demets_bounds, spend_obf
+from peekaudit.gst import lan_demets_bounds, spend_obf, spend_power
 from peekaudit.methods.base import EvalContext, Method, MethodOutput, sample_moments
 from peekaudit.scenarios import fine_grid
 from peekaudit.simulate import LookStats
@@ -132,6 +132,42 @@ class GstOBF(Method):
         if ctx.alpha != 0.05:
             raise ValueError("ref.gst_obf is implemented for alpha = 0.05")
         b = obf_bounds(ctx.n_max, tuple(int(c) for c in ctx.cols))
+        d, v, bad = _abs_diff_var(stats)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            se = np.sqrt(v)
+            z = np.abs(d) / se
+        return _finish(d, z >= b, b * se, (z - b) / b, bad)
+
+
+@lru_cache(maxsize=64)
+def power2_bounds(n_max: int, cols: tuple[int, ...]) -> np.ndarray:
+    """Power-family (rho = 2) bounds, 0.025 per side, at t_k = N_k / N_max, cached.
+
+    The spending function of spotify-confidence's group sequential test, computed by
+    peekaudit's own recursion. Looks past N_max get bound +inf, as for :func:`obf_bounds`.
+    """
+    t = fine_grid(n_max)[list(cols)] / n_max
+    b = lan_demets_bounds(t, spend_power(0.025, 2.0))
+    b[t > 1.0] = np.inf
+    return b
+
+
+class GstPower2(Method):
+    """Group sequential z-test with power-family (rho = 2) spending, planned for N_max.
+
+    A like-for-like control for ``spotify.gst``: same spending function and z-statistic,
+    but the reference variance (n - 1 variances; no result when an arm has n <= 1 or the
+    variance is 0). Not part of the study's method grid; used by
+    :mod:`peekaudit.gst_reference`, or by name as ``peekaudit.methods.reference:GstPower2``.
+    """
+
+    def __init__(self) -> None:
+        super().__init__("ref.gst_pow2", "absolute", "planned", "GST, power spending rho 2")
+
+    def evaluate(self, stats: LookStats, ctx: EvalContext) -> MethodOutput:
+        if ctx.alpha != 0.05:
+            raise ValueError("ref.gst_pow2 is implemented for alpha = 0.05")
+        b = power2_bounds(ctx.n_max, tuple(int(c) for c in ctx.cols))
         d, v, bad = _abs_diff_var(stats)
         with np.errstate(divide="ignore", invalid="ignore"):
             se = np.sqrt(v)

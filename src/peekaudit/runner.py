@@ -27,6 +27,7 @@ import json
 import os
 import subprocess
 import time
+import tomllib
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import MISSING, asdict, dataclass, field, fields
@@ -44,6 +45,7 @@ from peekaudit.scenarios import (
     MASTER_SEED,
     SCHEDULES,
     Unit,
+    check_design,
     fine_grid,
     study_units,
     unit_from_id,
@@ -97,9 +99,9 @@ class StudyConfig:
             errors.append(f"unknown schedules {bad_s}; known: {', '.join(SCHEDULES)}")
         for u in self.units:
             try:
-                unit_from_id(u)
-            except (ValueError, IndexError):
-                errors.append(f"not a unit id: {u!r}")
+                check_design(unit_from_id(u))
+            except ValueError as exc:
+                errors.append(str(exc))
         if errors:
             raise ValueError(f"invalid study config {self.name!r}: " + "; ".join(errors))
 
@@ -277,7 +279,8 @@ def run_unit(unit: Unit, cfg: StudyConfig) -> tuple[dict[str, Any], dict[str, np
             cells[m.name][s] = agg
             for f, arr in outcome.items():
                 arrays[f"{m.name}|{s}|{f}"] = arr
-    verified_ok = all(a.decision_mismatches == 0 for a in verification.values())
+    # Decisions, no-result flags and intervals must all agree (coverage uses the intervals).
+    verified_ok = all(a.ok for a in verification.values())
     summary = {
         "unit": unit.id,
         "cell": unit.cell,
@@ -376,20 +379,46 @@ def _run_and_save(
     return unit_id, elapsed, bool(summary["verified_ok"])
 
 
-def _git_sha() -> str:
+def _source_root(module_file: Path | None = None) -> Path | None:
+    """The peekaudit source checkout this module was imported from, or None.
+
+    ``parents[2]`` of this file is the repository root only for an editable install; for a
+    regular install it is ``<venv>/Lib`` (or ``lib``), which may sit inside some other git
+    repository. The root is accepted only if it holds peekaudit's own ``pyproject.toml``.
+    """
+    root = (module_file or Path(__file__)).resolve().parents[2]
     try:
-        root = Path(__file__).resolve().parents[2]
-        r = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, timeout=10
-        )
-        sha = r.stdout.strip()
-        dirty = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=no"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=10,
+        text = (root / "pyproject.toml").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    try:
+        name = tomllib.loads(text).get("project", {}).get("name")
+    except (ValueError, AttributeError):
+        return None
+    return root if name == "peekaudit" else None
+
+
+def _git_sha(module_file: Path | None = None) -> str:
+    """HEAD of the peekaudit checkout (``-dirty`` if modified), or ``unknown``.
+
+    Returns ``unknown`` for a non-editable install or when the checkout is not the top level
+    of a git repository, so another repository's commit is never recorded as peekaudit's.
+    """
+    root = _source_root(module_file)
+    if root is None:
+        return "unknown"
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=root, capture_output=True, text=True, timeout=10
         ).stdout.strip()
+
+    try:
+        top = git("rev-parse", "--show-toplevel")
+        if not top or Path(top).resolve() != root:
+            return "unknown"
+        sha = git("rev-parse", "HEAD")
+        dirty = git("status", "--porcelain", "--untracked-files=no")
         return (sha + ("-dirty" if dirty else "")) if sha else "unknown"
     except (OSError, subprocess.SubprocessError):
         return "unknown"

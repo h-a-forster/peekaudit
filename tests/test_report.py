@@ -104,3 +104,15 @@ def test_report_states_limits_findings_and_deviations(run_dir: Path) -> None:
     aa = [r for r in rows if r["hypothesis"] == "aa"]
     assert aa and all(0 <= r["rejections_small_arm"] <= r["rejections"] for r in aa)
     assert all(r["rejections_first_look"] <= r["rejections"] for r in aa)
+
+
+def test_interval_disagreement_in_old_units_fails_the_gate() -> None:
+    """Units written when verified_ok covered decisions only are re-checked from the cells."""
+    from peekaudit.report import unit_verified
+
+    cell = {"verification": {"decision_mismatches": 0, "interval_mismatches": 2, "ok": False}}
+    u = {"unit": "u", "verified_ok": True, "cells": {"m": {"daily14": cell, "fixed1": {}}}}
+    assert not unit_verified(u)
+    cell["verification"] = {"decision_mismatches": 0, "interval_mismatches": 0, "ok": True}
+    assert unit_verified(u)
+    assert not unit_verified({**u, "verified_ok": False})

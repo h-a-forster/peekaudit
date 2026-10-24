@@ -241,8 +241,43 @@ def study_units() -> list[Unit]:
 
 
 def unit_from_id(unit_id: str) -> Unit:
-    """Parse a unit id produced by :attr:`Unit.id`."""
-    metric_id, n_part, b_part, hyp = unit_id.rsplit("-", 3)
-    if metric_id not in METRICS or hyp not in ("aa", "ab"):
-        raise ValueError(f"not a unit id: {unit_id}")
-    return Unit(metric_id, int(n_part[1:]), int(b_part[1:]) / 100.0, hyp)  # type: ignore[arg-type]
+    """Parse a unit id produced by :attr:`Unit.id` and check that its design can run.
+
+    Requires a known metric, N_max >= 2, an allocation to B strictly between 0% and 100%,
+    no A/B unit for an infinite-variance metric, and the canonical spelling of the id.
+    """
+    try:
+        metric_id, n_part, b_part, hyp = unit_id.rsplit("-", 3)
+        if metric_id not in METRICS or hyp not in ("aa", "ab"):
+            raise ValueError
+        if n_part[:1] != "n" or b_part[:1] != "b":
+            raise ValueError
+        n_max, pct = int(n_part[1:]), int(b_part[1:])
+    except ValueError:
+        raise ValueError(f"not a unit id: {unit_id}") from None
+    if n_max < 2:
+        raise ValueError(f"unit {unit_id}: N_max must be >= 2 (got {n_max})")
+    if not 0 < pct < 100:
+        raise ValueError(f"unit {unit_id}: allocation to B must be in (0%, 100%) (got {pct}%)")
+    if hyp == "ab" and not METRICS[metric_id].ab_allowed:
+        raise ValueError(f"unit {unit_id}: no A/B unit for an infinite-variance metric")
+    unit = Unit(metric_id, n_max, pct / 100.0, hyp)  # type: ignore[arg-type]
+    if unit.id != unit_id:
+        raise ValueError(f"not a canonical unit id: {unit_id} (expected {unit.id})")
+    return unit
+
+
+def check_design(unit: Unit) -> None:
+    """Raise ValueError when a unit's design cannot be simulated or analysed.
+
+    Both arms must gain at least one unit at every fine-grid look (the simulator needs
+    strictly increasing counts per arm), and the cell's lift must be calibratable.
+    """
+    n_a, n_b = arm_counts(fine_grid(unit.n_max), unit.pi)
+    for arm, counts in (("A", n_a), ("B", n_b)):
+        if counts[0] < 1 or np.any(np.diff(counts) <= 0):
+            raise ValueError(
+                f"unit {unit.id}: arm {arm} does not grow at every look; N_max is too small "
+                "for this allocation"
+            )
+    unit.design_lift  # noqa: B018 - raises if no admissible lift exists

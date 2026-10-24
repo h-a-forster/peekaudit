@@ -110,7 +110,7 @@ def build_rows(units: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "hypothesis": u["hypothesis"],
                     "schedule": sched,
                     "claimed": c["claimed"],
-                    "verified_ok": u["verified_ok"],
+                    "verified_ok": unit_verified(u),
                     "n": n,
                     "rejections": k,
                     "rate": k / n,
@@ -360,9 +360,24 @@ def gates(rows: list[dict[str, Any]], units: list[dict[str, Any]]) -> list[dict[
         ties = sum(u["identities"][key]["ties"] for u in units)
         add(f"mirror self-consistency: {key}", mism == 0,
             f"{what}: {mism} mismatches, {ties} ties in {cells:,} replicate-looks")  # fmt: skip
-    bad = [u["unit"] for u in units if not u["verified_ok"]]
+    bad = [u["unit"] for u in units if not unit_verified(u)]
     add("engine in-loop agreement", not bad, "all units agree" if not bad else ", ".join(bad))
     return out
+
+
+def unit_verified(u: dict[str, Any]) -> bool:
+    """In-loop engine agreement of a unit: decisions, no-result flags and intervals.
+
+    Re-derived from the per-cell verification counts as well as the stored flag, so that
+    units written when the flag covered decisions only are held to the same rule.
+    """
+    cells_ok = all(
+        c["verification"].get("ok", False)
+        for by_sched in u["cells"].values()
+        for c in by_sched.values()
+        if "verification" in c
+    )
+    return bool(u["verified_ok"]) and cells_ok
 
 
 def verification_totals(rows: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
@@ -617,10 +632,12 @@ def _small_arm_section(sens_rows: list[dict[str, Any]]) -> list[str]:
         f"## Sensitivity: rejections only where both arms hold >= {MIN_ARM} units",
         "",
         "Many excesses arise at the first looks of small experiments. With 20% of traffic to",
-        "B and N_max = 1,000, the first stream140 look has 6 users in A and 1 in B. A zero-",
-        "variance arm gives a standard error of 0, or a z-statistic rests on a few",
-        "observations, and the engine reports significance on 1 to 30 users in B. The engines",
-        "apply no minimum; GrowthBook's product layer hides results below a minimum sample",
+        "B and N_max = 1,000, the first stream140 look has 6 users in A and 1 in B. spotify's",
+        "binary variance p(1 - p) is 0 for a one-unit arm, so its standard error can be 0 or",
+        "rest on the other arm alone, and it reports significance on 1 to 30 users in B;",
+        "gbstats and the reference methods give no result for an arm with n <= 1, but a",
+        "z-statistic on a few observations still rejects too often. The engines apply no",
+        "minimum; GrowthBook's product layer hides results below a minimum sample",
         "size of 150 (not part of the audited library). The rows below recompute FPR counting",
         f"only rejections at looks where both arms hold at least {MIN_ARM} units (same data,",
         "same analysis, earlier results ignored), Holm-adjusted per method and family as in",

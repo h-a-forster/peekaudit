@@ -242,8 +242,15 @@ Variance: if `sum_squares == sum` on every row (binary), v = Q/n - xbar^2. Other
      agrees with the engine to 2e-3 (tested for K = 5, 10).
 5. `spotify.z` (fixed horizon, peeked): same input without `final_expected_sample_size`;
    p = 2(1 - Phi(|D|/SE)), reject iff p < 0.05, CI D +/- z_{0.975} SE.
-   Edge cases seen: arms with n = 1 give SE NaN or 0 and `is_significant` False. A zero
-   denominator raises `ValueError`; the adapter records that as no result.
+   Edge cases seen: for binary (0/1) data the variance is p(1 - p), which is 0 for an arm
+   with n = 1, so a single-unit binary arm gives SE 0 (other arm constant) or an SE from
+   the other arm alone, and `is_significant` can be True (for example A = 6 units / 0
+   conversions vs B = 1 unit / 1 conversion: SE 0, p = 0, significant; A = 6/1 vs B = 1/1:
+   p = 4.3e-08, significant; the same holds for the sequential test). Only non-binary
+   single-unit arms give SE NaN (no rejection), and a single-unit non-binary control with
+   value 0 raises the `IndexError` below. A zero denominator raises `ValueError`; the
+   adapter records exceptions as no result. The mirror reproduces all of these
+   (`scripts/spotify_single_unit_repro.py`, `tests/test_spotify_adapter.py`).
 
 ### 4.3 Product-layer guard (optional variant, M3)
 
@@ -305,8 +312,11 @@ Known mathematical relations, used as oracles:
    |statistic - threshold| < 1e-9 relative; ties are counted, not failed.
 3. In-the-loop agreement in every study unit: the first k replicates are re-run through
    the real engine look by look (spotify: full-path calls where equivalent, look-by-look
-   past the planned size). Any decision mismatch fails the unit, and the unit is not
-   reported. The counts are reported per unit.
+   past the planned size). Any decision, no-result or interval mismatch fails the unit
+   (coverage rests on the mirror's intervals), and the unit is not reported. The counts
+   are reported per unit. (Until after v0.1 only decision mismatches failed a unit; the
+   report re-derives the rule from the per-cell counts, and every published unit has 0
+   mismatches of all three kinds.)
 4. Bug policy: an apparent engine defect is reported only with (a) a minimal standalone
    reproduction that calls the engine directly, without peekaudit, (b) the mirror and the
    paper formula both disagreeing with the engine, and (c) a second independent check that
@@ -550,9 +560,24 @@ Cut or deferred, with reasons:
   findings), the limitations and this deviations list.
 - **Cross-study check (added after v0.1):** `peekaudit compare` tests every cell of a smaller
   study against a larger one with a two-sided Fisher exact test, Holm-adjusted per rate kind
-  (FPR/power, coverage). Studies with the same master seed and chunk size are nested (the
-  smaller study's replicates are the larger one's first replicates), so the comparison then
-  uses the larger study's remaining replicates (counts differenced), which are independent.
+  (FPR/power, coverage). Studies with the same master seed and chunk size, whose smaller
+  replicate counts are whole chunks (or equal), are nested (the smaller study's replicates
+  are the larger one's first replicates), so the comparison then uses the larger study's
+  remaining replicates (counts differenced), which are independent. A partial last chunk is
+  not a prefix of a full chunk (arm B's stream is offset), so such studies are not nested.
+- **Like-for-like GST control (added after v0.1):** `ref.gst_obf` differs from
+  `spotify.gst` in its spending function (O'Brien-Fleming vs power family rho = 2) and in
+  its variance (n - 1, no result for an arm with n <= 1), so it supports only a qualitative
+  comparison. `ref.gst_pow2` (power family rho = 2, peekaudit's own bounds, reference
+  variance) is outside the study grid, so the config hash and published runs are unchanged;
+  `scripts/gst_reference_comparison.py` evaluates it, `spotify.gst` and `ref.gst_obf` on the
+  run's own A/A data, checks that the spotify and OBF counts equal the run's, and tests
+  spotify vs pow2 per cell with an exact McNemar test (Holm over cells).
+- **Unit ids (7):** config validation also checks that each unit's design can run
+  (N_max >= 2, allocation strictly between 0% and 100%, both arms growing at every look, a
+  calibratable lift, no A/B unit for an infinite-variance metric, canonical id).
+- **Provenance (7):** the git SHA is read only from a peekaudit source checkout that is the
+  top level of its repository; otherwise (a regular install) it is recorded as `unknown`.
 
 ## 14. References
 

@@ -44,3 +44,11 @@ def test_gbstats_rare_conversion_repro_runs(capsys) -> None:  # type: ignore[no-
     mod.main(["--reps", "3", "--looks", "5", "--n", "2000"])
     out = capsys.readouterr().out
     assert "relative" in out and "absolute" in out
+
+
+def test_spotify_single_unit_repro_reports_significance(capsys) -> None:  # type: ignore[no-untyped-def]
+    mod = _load("spotify_single_unit_repro")
+    mod.main()
+    lines = capsys.readouterr().out.strip().splitlines()
+    assert len(lines) == 4 and all("is_significant True" in ln for ln in lines)
+    assert "CI [1.0000, 1.0000]" in lines[0]

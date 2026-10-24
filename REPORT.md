@@ -9,7 +9,9 @@ reports hold every cell:
 - quick study (cross-check): [docs/results/quick/REPORT.md](docs/results/quick/REPORT.md);
 - quick vs full comparison:
   [docs/results/full/quick_vs_full.md](docs/results/full/quick_vs_full.md);
-- mirror vs engine on randomised inputs: [docs/results/verify.json](docs/results/verify.json).
+- mirror vs engine on randomised inputs: [docs/results/verify.json](docs/results/verify.json);
+- spotify GST vs like-for-like reference GSTs:
+  [docs/results/full/gst_reference.md](docs/results/full/gst_reference.md).
 
 All rates are percentages with exact 95% Clopper-Pearson intervals. "Violates" means the
 one-sided exact binomial test of FPR <= 5% (or coverage >= 95%) rejects after Holm
@@ -32,6 +34,7 @@ listed under [Engine behaviours](#engine-behaviours), each with a standalone rep
 | engine checks in the loop | first 20 replicates per unit and schedule (spotify GST on 140 looks: 4) | 10 (2) |
 | sanity gates (DESIGN 5.3) | 40 of 40 pass | 40 of 40 pass |
 | sensitivity (both arms >= 150) | 28 A/A units, 5.7 min, 3 workers | 28 units, 1.6 min |
+| like-for-like GST control | 24 A/A units (72 spotify GST cells), 5.2 min, 3 workers | not run |
 
 Versions (both studies): Python 3.11.9, gbstats 0.8.0, spotify-confidence 4.1.0, numpy
 1.26.4, pandas 1.5.3, scipy 1.17.1, statsmodels 0.15.0. The code changes between `fa12471`
@@ -53,8 +56,11 @@ strictest Holm step is 5.43-5.52% for the sequential methods (quick: about 6.2%)
 The most important pattern: many of the largest excesses arise at the first looks of small
 experiments, where one arm holds a handful of users. With N_max = 1,000 and 20% of traffic
 to B, the first of 140 looks has 6 users in A and 1 in B. A zero-variance arm gives a
-standard error of 0, or a z-statistic rests on a few observations, and the engines report
-significance on 1 to 30 users in B. The engine libraries apply no minimum sample size
+standard error of 0, or a z-statistic rests on a few observations. spotify reports
+significance on 1 to 30 users in B: for 0/1 data it uses the variance p(1 - p), which is 0
+for a one-unit arm, so even a single user in B can give a significant result. gbstats (and
+peekaudit's reference methods) refuse an arm with n <= 1, because its sample variance is
+then 0 or undefined. The engine libraries apply no minimum sample size
 (GrowthBook's product layer hides results below 150 units; that layer is not audited). The
 "guarded" rates below count only rejections at looks where both arms hold at least 150
 units (same data and analysis; a sensitivity analysis, not a model of any product). Rare
@@ -113,18 +119,42 @@ The claim covers schedules within the planned sample size (`fixed1`, `daily14`, 
 - Guarded, 14 of 60 primary cells still violate (3 of them single-look); stress 6 of 12.
 - Coverage at stopping violates in 8 of 60 cells, worst 81.7% [80.9, 82.4] (10% conversions,
   N_max = 1,000, 20% to B, 140 looks).
-- The independently implemented reference GST (Lan-DeMets O'Brien-Fleming) shows the same
-  pattern: 17 of 72 primary cells (17 guarded), 6 of 12 stress. This is how a z-based group
-  sequential test behaves on small, skewed or rare-event arms, not an implementation defect.
+- **Like-for-like control.** The study's reference GST is not a like-for-like control: it
+  uses O'Brien-Fleming spending where spotify uses power-family spending with rho = 2, and
+  it refuses arms with n <= 1. It also violates often (17 of 72 primary cells, 17 guarded;
+  6 of 12 stress), but that comparison is qualitative. A reference with spotify's own
+  spending function (`ref.gst_pow2`: rho = 2, peekaudit's own bounds, sample variances that
+  refuse n <= 1 arms) was therefore run on the same 20,000 replicates of the 24 A/A units
+  ([gst_reference.md](docs/results/full/gst_reference.md), 5.2 min; it reproduces the run's
+  spotify and OBF counts in every cell). It violates in exactly the same cells as spotify
+  (21 of 60 primary, 6 of 12 stress), and in 68 of 72 cells the two do not differ (exact
+  McNemar test on the paired replicates, Holm over 72 cells). These excesses are how a
+  z-based group sequential test with this spending behaves on small, skewed or rare-event
+  arms, not an implementation defect.
+- **Where spotify differs: one-unit binary arms.** The four cells where spotify rejects
+  significantly more often than `ref.gst_pow2` are all Bernoulli, and in none does the
+  reference reject more. In the largest, 10% conversions, N_max = 1,000, 20% to B, 140
+  looks, spotify has 20.4% [19.8, 20.9] and `ref.gst_pow2` 11.5% [11.0, 11.9] (OBF 7.0%).
+  All 1,812 replicates (9.1%) that spotify rejects at the first look (6 users in A, 1 in B)
+  fall where the reference gives no result; 1,079 of them have a standard error of exactly
+  0. So about half of spotify's rate in that cell comes from its handling of one-unit and
+  zero-SE binary arms ([engine behaviour 5](#engine-behaviours)). The other three cells: 1%
+  conversions, same design, 140 looks (19.7% vs 18.8%: 192 extra rejections, and 192 spotify
+  rejections at looks where the reference refuses); 10% conversions, daily looks (9.9% vs
+  9.6%, 69 extra; the first daily look has 14 users in B, so this comes from p(1 - p)/n
+  being slightly smaller than the n - 1 sample variance); 10% conversions, 50% to B, 140
+  looks (5.1% vs 4.9%, 25 extra; not a violation).
 - Past the planned sample size (informational; the library makes no claim there) it reaches
   7.3-8.2% on normal data, for example 8.2% [7.8, 8.5] at N_max = 1,000, 20% to B.
 
 ### Controls and contrasts
 
-- **Peeking at fixed-horizon tests** (informational): the naive z-test and spotify's z-test
-  reach 21.4-23.7% with 14 daily looks on normal data and 39.4-40.4% with 140 looks at
-  N_max = 20,000, matching the exact repeated-significance values 22.0% and 39.9%. At
-  N_max = 1,000, 140 looks give 46%, because the early looks have very few users. The gbstats
+- **Peeking at fixed-horizon tests** (informational): at N_max = 20,000 the naive z-test
+  and spotify's z-test reach 21.4-21.9% with 14 daily looks on normal data and 39.4-40.4%
+  with 140 looks, matching the exact repeated-significance values 22.0% and 39.9%. At
+  N_max = 1,000 they are higher and do not match the exact values (daily looks 22.8-23.7%,
+  for example 23.7% [23.1, 24.3]; 140 looks 46%), because the early looks have very few
+  users. The gbstats
   t-test behaves the same (21.2-21.7%, 37.3-39.3%).
 - **gbstats Bayesian "chance to win >= 95%"** is exactly a two-sided level-0.10 z-test on the
   relative scale (single-look FPR 9.8%, 99.9% interval [9.1, 10.5]) and reaches 37-39% with
@@ -197,9 +227,18 @@ pandas), so it cannot come from peekaudit's adapters. Draft issue texts are in
 4. **gbstats packaging:** gbstats 0.8.0 on PyPI (2024-06-20) is not the code on GrowthBook's
    main branch, which also reports version 0.8.0. Based on a source comparison; to be
    re-checked before filing.
+5. **spotify-confidence 4.1.0, significance from a one-unit binary group:** for 0/1 data
+   `ZTest` uses the variance p(1 - p), which is 0 for a single unit. A = 6 users with 0
+   conversions vs B = 1 user with 1 conversion gives a standard error of 0, a zero-width
+   interval and `is_significant` True; A = 6/1 vs B = 1/1 gives p = 4.3e-08, significant;
+   both with and without the sequential correction
+   ([scripts/spotify_single_unit_repro.py](scripts/spotify_single_unit_repro.py)). Not a
+   computational error but a missing guard: no variance can be estimated from one
+   observation. It accounts for about half of the largest spotify GST excess above.
 
-The spotify GST excesses on small, skewed or rare-event arms are not drafted: the reference
-GST shows the same pattern, so they are not engine defects.
+The other spotify GST excesses on small, skewed or rare-event arms are not drafted: a
+reference GST with the same spending function violates in exactly the same cells, so they
+are a property of the test, not engine defects.
 
 ## Limitations
 
@@ -222,6 +261,7 @@ uv run python scripts/run_study.py --config full --out runs/full --workers 3  # 
 uv run peekaudit sensitivity runs/full --workers 3                             # ~6 min
 uv run peekaudit report runs/full --publish docs/results/full
 uv run peekaudit compare docs/results/quick docs/results/full --out docs/results/full/quick_vs_full
+uv run python scripts/gst_reference_comparison.py --run runs/full --out docs/results/full  # ~5 min
 ```
 
 The run checkpoints one file per unit and resumes where it stopped; the wrapper retries up

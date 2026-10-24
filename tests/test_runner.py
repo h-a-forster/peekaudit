@@ -194,3 +194,102 @@ def test_legacy_units_take_manifest_provenance_only_for_a_single_start(tmp_path:
     assert provenance_groups(tmp_path, manifest, units)[0]["source"].startswith("run manifest")
     manifest["starts"].append(manifest["starts"][0])
     assert provenance_groups(tmp_path, manifest, units)[0]["git_sha"] == "unknown"
+
+
+def _git(cwd: Path, *args: str) -> str:
+    import subprocess
+
+    return subprocess.run(
+        ["git", *args], cwd=cwd, capture_output=True, text=True, check=True
+    ).stdout.strip()
+
+
+def _repo(path: Path) -> str:
+    path.mkdir(parents=True, exist_ok=True)
+    _git(path, "init", "-q")
+    (path / "x.txt").write_text("x", encoding="utf-8")
+    _git(path, "add", "x.txt")
+    _git(path, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "-qm", "x")
+    return _git(path, "rev-parse", "HEAD")
+
+
+def test_git_sha_ignores_an_enclosing_foreign_repository(tmp_path: Path) -> None:
+    """A regular install inside another git repo must not record that repo's commit."""
+    from peekaudit.runner import _git_sha, _source_root
+
+    foreign = _repo(tmp_path / "other")
+    # Regular install: parents[2] of the module is <venv>/Lib, which has no pyproject.toml.
+    mod = tmp_path / "other" / ".venv" / "Lib" / "site-packages" / "peekaudit" / "runner.py"
+    mod.parent.mkdir(parents=True)
+    mod.write_text("", encoding="utf-8")
+    assert _source_root(mod) is None
+    assert _git_sha(mod) == "unknown" != foreign
+    # A pyproject.toml of another project at that place does not count either.
+    (tmp_path / "other" / ".venv" / "pyproject.toml").write_text(
+        '[project]\nname = "something-else"\n', encoding="utf-8"
+    )
+    alt = tmp_path / "other" / ".venv" / "src" / "peekaudit" / "runner.py"
+    alt.parent.mkdir(parents=True)
+    alt.write_text("", encoding="utf-8")
+    assert _git_sha(alt) == "unknown"
+    # A peekaudit tree without its own repository, nested in a foreign one: unknown.
+    tree = tmp_path / "other" / "vendored"
+    (tree / "src" / "peekaudit").mkdir(parents=True)
+    (tree / "pyproject.toml").write_text('[project]\nname = "peekaudit"\n', encoding="utf-8")
+    nested = tree / "src" / "peekaudit" / "runner.py"
+    nested.write_text("", encoding="utf-8")
+    assert _source_root(nested) == tree.resolve()
+    assert _git_sha(nested) == "unknown"
+
+
+def test_git_sha_of_a_peekaudit_checkout(tmp_path: Path) -> None:
+    from peekaudit.runner import _git_sha
+
+    tree = tmp_path / "peekaudit"
+    (tree / "src" / "peekaudit").mkdir(parents=True)
+    (tree / "pyproject.toml").write_text('[project]\nname = "peekaudit"\n', encoding="utf-8")
+    sha = _repo(tree)
+    assert _git_sha(tree / "src" / "peekaudit" / "runner.py") == sha
+
+
+@pytest.mark.parametrize(
+    "uid",
+    [
+        "normal-n0-b50-aa",
+        "normal-n1000-b150-aa",
+        "normal-n1000-b00-aa",
+        "normal-n1000-b100-aa",
+        "normal-n10-b50-aa",
+        "pareto_a15-n1000-b50-ab",
+        "normal-n01000-b50-aa",
+        "normal-nX-b50-aa",
+        "nonsense",
+    ],
+)
+def test_config_rejects_impossible_unit_designs(uid: str) -> None:
+    with pytest.raises(ValueError, match="invalid study config"):
+        StudyConfig("t", r_aa=1, r_ab=1, k_verify=0, k_verify_slow=0, units=(uid,))
+
+
+def test_every_study_unit_passes_design_checks() -> None:
+    from peekaudit.scenarios import check_design, study_units
+
+    for u in study_units():
+        check_design(unit_from_id(u.id))
+
+
+def test_interval_mismatch_fails_verification(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Coverage uses the mirror's intervals, so an interval disagreement must fail the unit."""
+    import peekaudit.runner as runner
+    from peekaudit.verify import Agreement
+
+    def fake_compare(mirror, engine):  # noqa: ANN001, ANN202, ARG001
+        return Agreement(cells=1, interval_mismatches=1)
+
+    monkeypatch.setattr(runner, "compare", fake_compare)
+    cfg = StudyConfig(
+        "t", r_aa=50, r_ab=50, k_verify=1, k_verify_slow=0, chunk=50,
+        methods=("gbstats.seq.abs",), schedules=("fixed1",),
+    )  # fmt: skip
+    s, _ = run_unit(unit_from_id("normal-n1000-b50-aa"), cfg)
+    assert not s["verified_ok"]

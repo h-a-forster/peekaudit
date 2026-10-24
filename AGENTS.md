@@ -45,13 +45,14 @@ conformance check.
 | `src/peekaudit/scenarios.py` | metrics, true moments, effect calibration, schedules, grids | done |
 | `src/peekaudit/simulate.py` | seeded, chunked generation of cumulative sufficient statistics | done |
 | `src/peekaudit/methods/base.py` | `MethodOutput`, `EvalContext`, `Method`, `ScalarMethod`, stopping rule | done |
-| `src/peekaudit/methods/reference.py` | naive z, mSPRT, ACS, GST-OBF | done |
+| `src/peekaudit/methods/reference.py` | naive z, mSPRT, ACS, GST-OBF; GST rho = 2 (control, not in the grid) | done |
 | `src/peekaudit/methods/gbstats_adapter.py` | gbstats engine calls + vectorised mirror | done |
 | `src/peekaudit/methods/spotify_adapter.py` | spotify-confidence engine calls + mirror | done |
 | `src/peekaudit/methods/registry.py` | method names -> factories | done |
 | `src/peekaudit/verify.py` | mirror-vs-engine randomised grid and in-loop agreement | done |
 | `src/peekaudit/runner.py` | units, config validation, process pool, checkpoints, provenance, progress log | done |
 | `src/peekaudit/sensitivity.py` | FPR counting only looks with both arms >= 150 (checkpointed) | done |
+| `src/peekaudit/gst_reference.py` | spotify.gst vs rho = 2 and OBF reference GSTs on a run's A/A data (checkpointed) | done |
 | `src/peekaudit/compare.py` | cross-study cell-by-cell check (nesting-aware Fisher + Holm) | done |
 | `src/peekaudit/report.py` | tables, Holm families, gates, detection limit, findings, limitations, figures | done |
 | `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | done |
@@ -83,6 +84,7 @@ uv run python scripts/run_study.py --config full --out runs/full --workers 3   #
 uv run peekaudit sensitivity runs/full --workers 3                            # ~6 min
 uv run peekaudit report runs/full --publish docs/results/full
 uv run peekaudit compare docs/results/quick docs/results/full --out docs/results/full/quick_vs_full
+uv run python scripts/gst_reference_comparison.py --run runs/full --out docs/results/full  # ~5 min, 3 workers
 ```
 
 Before a new long run, time a one-unit pilot and project the total. If it would overrun the
@@ -169,15 +171,32 @@ report lists every git SHA found.
 - **Done (upstream drafts):** `docs/upstream/` holds four drafts (not filed): spotify
   IndexError, spotify bounds after overrun, gbstats relative FPR with few events / tiny arms,
   gbstats PyPI vs main (re-check before filing). Standalone repros in `scripts/`, tested in
-  `tests/test_scripts.py`. spotify GST small-arm excess deliberately not drafted (the
-  reference GST behaves the same).
+  `tests/test_scripts.py`. A fifth draft (round 3, below): spotify significance from a
+  one-unit binary group.
 - **Done (engine-backed identities):** `verify.engine_identities`, run by `peekaudit verify`
   (or `--method identities`): real gbstats Bayes vs an independent textbook z at level 0.10,
   and the real gbstats absolute sequential engine vs `ref.acs`; 0 mismatches on 2,000 random
   inputs each (decisions, no-result flags, intervals). Finding while building it: gbstats
   refuses (no result) when either arm's variance is <= 0 or the control mean is 0, on both
   scales. `docs/results/verify.json` regenerated (9.6 min; all 0 mismatches).
-- **Not done / next:** copying the gbstats sdist
+- **Done (round 3 audit fixes):** like-for-like GST control `ref.gst_pow2` (rho = 2,
+  reference variances; outside the study grid so `runs/full` stays valid) and
+  `peekaudit.gst_reference` + `scripts/gst_reference_comparison.py`: 24 A/A units / 72 cells
+  of `runs/full`, 5.2 min on 3 workers, run counts reproduced in every cell. pow2 violates in
+  exactly spotify's cells (21/60 primary, 6/12 stress); spotify rejects more in 4 Bernoulli
+  cells, mostly from one-unit binary arms (SE 0): 20.4% vs 11.5% in bern_p10-n1000-b20
+  stream140. Published `docs/results/full/gst_reference.{md,json}`; REPORT/README reworded
+  (OBF is only a qualitative control); new upstream draft + `scripts/spotify_single_unit_repro.py`.
+  Also fixed: `verified_ok` now requires no-result and interval agreement too (report
+  re-derives it from cell counts; published runs unchanged, 0 mismatches); `_git_sha` only
+  trusts a peekaudit checkout at its repo top level; `compare.is_nested` needs whole-chunk
+  counts; config validation rejects impossible unit designs (`scenarios.check_design`);
+  DESIGN 4.2 single-unit binary edge case; REPORT peeking range restricted to N_max = 20,000
+  and "1 to 30 users" attributed to spotify; README `uv tool install --python 3.11`.
+  Generated reports for quick and full republished (text and deviations only; numbers
+  unchanged). No study re-run was needed.
+- **Not done / next:** decide whether to file the spotify one-unit draft (re-run the repro
+  on the latest release first); copying the gbstats sdist
   and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
   product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
   interim answer); tagging and publishing (README
