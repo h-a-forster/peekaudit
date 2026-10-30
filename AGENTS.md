@@ -116,11 +116,12 @@ report lists every git SHA found.
 - gbstats Bayes with the default improper prior and a 95% chance-to-win threshold is exactly
   a two-sided z-test at level 0.10 on the relative scale.
 - gbstats 0.8.0 on PyPI (2024-06-20) is not the code GrowthBook main runs today, though both
-  say 0.8.0. The audit covers PyPI only.
+  say 0.8.0 (re-checked 2026-10-30 at main 830555b9c1: different code, test API and pandas
+  pin). The audit covers PyPI only. The rare-event repro gives identical numbers on main.
 - GrowthBook product defaults (`packages/shared/src/constants.ts`, commit de93c5d6e1):
   sequential off, tuning 5000, confidence level 0.95, min sample size 150 (product layer).
 
-## Status and next steps
+## Status and next steps (2026-10-30)
 
 - **Done (M0):** scaffold, `stats.py`, `gst.py`, engine environment tests, CLI `versions`,
   `scripts/reference_values.py`, DESIGN.md.
@@ -195,12 +196,16 @@ report lists every git SHA found.
   and "1 to 30 users" attributed to spotify; README `uv tool install --python 3.11`.
   Generated reports for quick and full republished (text and deviations only; numbers
   unchanged). No study re-run was needed.
-- **Not done / next:** decide whether to file the spotify one-unit draft (re-run the repro
-  on the latest release first); copying the gbstats sdist
+- **Done (2026-10-30, 0.1.1):** CHANGELOG 0.1.1 and `docs/release-notes-0.1.1.md` (no tag);
+  all five upstream drafts re-checked against gbstats 0.8.0 / spotify-confidence 4.1.0
+  (still the latest PyPI releases; spotify main equals 4.1.0) and GrowthBook main
+  830555b9c1: all still apply, results unchanged. Hygiene scan of tracked files and history:
+  clean.
+- **Not done / next:** decide which upstream drafts to file (search the trackers first);
+  tag v0.1.1 (v0.1.0 was never tagged); copying the gbstats sdist
   and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
   product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
-  interim answer); tagging and publishing (README
-  install points at the repository without a tag until then).
+  interim answer). The README install points at the repository without a tag until one exists.
 - **Deferred: variance reduction (CUPED).** Not started in round 2: doing it robustly needs a
   pre-period covariate in `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic),
   a gbstats `RegressionAdjustedStatistic` sequential adapter with its own mirror or direct

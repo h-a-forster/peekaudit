@@ -5,6 +5,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## 0.1.1 - 2026-10-30
+
 ### Added
 
 - Full study results in `docs/results/full/` (20,000 A/A and 10,000 A/B replicates per
@@ -26,7 +28,6 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `scripts/gst_reference_comparison.py`, which compare it with `spotify.gst` and
   `ref.gst_obf` on a run's own A/A data (checkpointed per unit, paired McNemar tests).
   Results in `docs/results/full/gst_reference.{md,json}`.
-
 - `peekaudit sensitivity` (`peekaudit.sensitivity`): recomputes each sequential method's
   A/A false-positive rate counting only rejections at looks where both arms hold at least
   150 units. Checkpointed per unit; the regenerated unguarded counts must equal the run's.
@@ -42,7 +43,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - README results now lead with the full study; the quick study is the cross-check.
-
+- Version 0.1.1 in `pyproject.toml`, `peekaudit.__version__` and `CITATION.cff`.
+- `docs/upstream/` drafts re-checked on 2026-10-30 against the latest PyPI releases
+  (gbstats 0.8.0, spotify-confidence 4.1.0, both unchanged) and GrowthBook main: all five
+  still reproduce; the gbstats rare-event result is identical on main.
 - One completeness rule for `run`, `status` and `report`: same config hash. The package
   version is recorded, not matched, so `status` no longer reports a finished run as 0 done
   after a version bump. `run` and `status` warn when finished units come from other code.

@@ -1,6 +1,8 @@
 # SequentialTwoSidedTTest: false-positive rate above alpha for relative effects with few events
 
-**Status:** draft, not filed. Target: GrowthBook repository (gbstats).
+**Status:** draft, not filed. Target: GrowthBook repository (gbstats). **Last re-checked:**
+2026-10-30 with gbstats 0.8.0 (still the latest PyPI release) and with GrowthBook main at
+commit 830555b9c1: both give the 1,000-replicate figures below exactly (see Environment).
 
 ## Summary
 
@@ -87,4 +89,8 @@ absolute one.
 ## Environment
 
 - gbstats 0.8.0 (PyPI, released 2024-06-20)
+- Also GrowthBook main at 830555b9c1 (2026-10-30, `packages/stats`, still versioned 0.8.0;
+  pandas 2.3.3): same result, 15.2% relative and 1.5% absolute. Main's API differs, so the
+  script needs two edits there: pass `[(stat_a, stat_b)]` to `SequentialTwoSidedTTest` and
+  read `pValue` / `errorMessage` from the result.
 - Python 3.11.9, numpy 1.26.4, scipy 1.17.1, pandas 1.5.3

@@ -1,8 +1,11 @@
 # Upstream issue drafts
 
 Draft issue texts for engine behaviours found while building peekaudit. **None of them has
-been filed.** Each draft has a standalone reproduction in `scripts/` that imports only the
-engine (plus numpy, scipy and pandas), so the behaviour cannot come from peekaudit's
+been filed.** All five were last re-checked on 2026-10-30 against the latest PyPI releases
+(gbstats 0.8.0, spotify-confidence 4.1.0; spotify's main branch equals 4.1.0) and still
+apply; the gbstats rare-event result is also identical on GrowthBook main (830555b9c1).
+Each engine-behaviour draft has a standalone reproduction in `scripts/` that imports only
+the engine (plus numpy, scipy and pandas), so the behaviour cannot come from peekaudit's
 adapters.
 
 | Draft | Engine | Kind | Reproduction |
@@ -11,7 +14,7 @@ adapters.
 | [spotify-confidence-sequential-bounds-after-overrun.md](spotify-confidence-sequential-bounds-after-overrun.md) | spotify-confidence 4.1.0 | earlier looks' bounds change after an overrun | `scripts/spotify_overrun_repro.py` |
 | [spotify-confidence-significance-single-unit-binary-arm.md](spotify-confidence-significance-single-unit-binary-arm.md) | spotify-confidence 4.1.0 | significant result from a one-unit binary group (SE 0 or one-sided) | `scripts/spotify_single_unit_repro.py` |
 | [gbstats-sequential-relative-rare-events.md](gbstats-sequential-relative-rare-events.md) | gbstats 0.8.0 | sequential FPR above alpha (relative effect, few events; tiny or skewed arms) | `scripts/gbstats_rare_conversion_repro.py` |
-| [gbstats-pypi-release-behind-main.md](gbstats-pypi-release-behind-main.md) | gbstats 0.8.0 | packaging: PyPI release differs from main at the same version | none (source comparison; re-check before filing) |
+| [gbstats-pypi-release-behind-main.md](gbstats-pypi-release-behind-main.md) | gbstats 0.8.0 | packaging: PyPI release differs from main at the same version | none (source comparison, re-checked 2026-10-30) |
 
 Not drafted, on purpose:
 

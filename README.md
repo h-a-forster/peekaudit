@@ -32,7 +32,7 @@ et al. 1969; Jennison and Turnbull 2000).
 
 Every engine result in the study comes from a vectorised mirror of the engine's arithmetic.
 The mirrors are checked against real engine calls inside the run and on randomised grids
-that include degenerate inputs; in v0.1 there were zero disagreements.
+that include degenerate inputs; in the published runs there were zero disagreements.
 
 ## Results (full study)
 
@@ -124,7 +124,7 @@ overrides yourself (`uv tool install --overrides overrides.txt ...` with the fou
 
 ## Quick start
 
-Check a method against the conformance battery (about a minute):
+Check a method against the conformance battery (under a minute):
 
 ```console
 $ uv run peekaudit conform --method ref.gst_obf --battery smoke
@@ -208,7 +208,7 @@ If you use peekaudit, please cite it using [CITATION.cff](CITATION.cff):
 @software{peekaudit,
   author  = {{peekaudit contributors}},
   title   = {peekaudit: auditing sequential-testing guarantees of open-source A/B engines},
-  version = {0.1.0},
+  version = {0.1.1},
   year    = {2026},
   url     = {https://github.com/h-a-forster/peekaudit}
 }

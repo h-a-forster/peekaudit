@@ -1,6 +1,9 @@
 # ZTest.difference raises IndexError when the control group has one unit with value 0
 
-**Status:** draft, not filed. Target: spotify-confidence issue tracker.
+**Status:** draft, not filed. Target: spotify-confidence issue tracker. **Last re-checked:**
+2026-10-30 with spotify-confidence 4.1.0, still the latest PyPI release and identical to the repository's main
+branch (last commit is the 4.1.0 release, 0f12dd39af): still raises the same `IndexError`
+(`scripts/spotify_indexerror_repro.py`).
 
 ## Summary
 
