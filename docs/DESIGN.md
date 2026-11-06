@@ -35,7 +35,7 @@ scenarios.py    metric generators, true moments, effect calibration, look schedu
 simulate.py     chunked, seeded generation of cumulative sufficient statistics (LookStats)
 methods/
   base.py       Method protocol, MethodOutput, capabilities and claims, ScalarMethod helper
-  reference.py  naive z, mSPRT, asymptotic CS, Lan-DeMets OBF GST (uses gst.py)
+  reference.py  naive z, mSPRT, asymptotic CS, Lan-DeMets GSTs (uses gst.py)
   gbstats_adapter.py   engine-in-the-loop calls + vectorised mirror, lazy import
   spotify_adapter.py   engine-in-the-loop calls + vectorised mirror, lazy import
   registry.py   name -> factory ("gbstats.seq.rel", "ref.acs", ...)
@@ -45,7 +45,10 @@ verify.py       engine vs mirror agreement on a replicate subsample
 runner.py       work units, process pool (<= 4 workers), checkpoints, progress log
 conformance.py  batteries, check_conformance(), assert_conforms()
 report.py       tables (Markdown/JSON), Holm families, figures (matplotlib, optional)
-cli.py          peekaudit run | status | report | conform | verify | versions
+sensitivity.py  FPR counting only looks where both arms reach a minimum size
+gst_reference.py  spotify.gst vs like-for-like reference GSTs on a run's A/A data
+compare.py      cross-study cell-by-cell check
+cli.py          peekaudit run | status | sensitivity | report | compare | verify | conform | versions
 ```
 
 Data flow: `scenarios` defines a unit, which is (metric, N_max, allocation, hypothesis).
@@ -79,13 +82,13 @@ class MethodOutput:  # arrays of shape (R, K)
     lower: np.ndarray  # interval at that look (NaN when the method gives none)
     upper: np.ndarray
     no_result: np.ndarray  # bool: the engine returned its "cannot analyse" default output
-    scale: Literal["absolute", "relative"]
+    margin: np.ndarray  # signed distance from the decision threshold (classifies exact ties)
 ```
 
-`Method` protocol: `name`, `scale`, `supports(metric) -> bool`, a
-`claims(schedule, n_max) -> bool` predicate (section 6.3), `evaluate(stats, schedule_ctx) ->
-MethodOutput` (vectorised), and, for engine adapters only, `evaluate_engine(stats, rows,
-schedule_ctx)`, which calls the real engine for each listed replicate. `ScalarMethod` wraps
+`Method` base class: `name`, `scale`, `supports(metric) -> bool`, a `claims(schedule) -> bool`
+predicate (section 6.3), `evaluate(stats, ctx) -> MethodOutput` (vectorised), and, for engine
+adapters only, `evaluate_engine(stats, ctx)`, which calls the real engine for every replicate
+of `stats`. `ScalarMethod` wraps
 a per-look callback `decide(n_a, sum_a, sumsq_a, n_b, sum_b, sumsq_b) -> (reject, lo, hi)`,
 so third parties can add an engine without vectorising it.
 
@@ -152,8 +155,8 @@ ones.
 - Default study ("quick", this machine): R_AA = 4,000, R_AB = 2,000 replicates, engine
   verification on the first k = 10 replicates per unit (spotify `stream140`: k = 2; see
   section 5.3).
-- Full study (documented, not run by default): R_AA = 20,000, R_AB = 10,000, k = 100
-  (`peekaudit run --config full`).
+- Full study: R_AA = 20,000, R_AB = 10,000, k = 20 (spotify `stream140`: k = 4; see section
+  13) (`peekaudit run --config full`).
 - Seeds: master seed 20261023. Unit seed = `SeedSequence(master, spawn_key=(h(unit_id),
   chunk))` where h is the first 8 bytes of SHA-256 of the unit id. Adding or reordering
   units does not change any other unit's stream. Replicates are generated in fixed chunks
@@ -175,8 +178,8 @@ ones.
   total, within the 45-minute target. M5 measures a one-unit pilot first and adjusts k
   (not R) if the projection exceeds 45 minutes. Measured: the quick study took 200.6
   CPU-min (50.3 min wall on 4 workers, machine shared with other jobs), dominated by engine
-  verification. Full study (R x 5, k x 2): projected about 2.5-3 h wall on 4 idle workers,
-  more on a loaded machine. Confirm with a pilot projection before launching.
+  verification. The full study (R x 5, k x 2) took 211.8 CPU-min (53.2 min wall on 4
+  workers). Confirm with a pilot projection before launching a new study.
 
 ## 4. Methods: exact specifications
 
@@ -254,11 +257,14 @@ Variance: if `sum_squares == sum` on every row (binary), v = Q/n - xbar^2. Other
 
 ### 4.3 Product-layer guard (optional variant, M3)
 
-GrowthBook hides results until the baseline reaches `DEFAULT_MIN_SAMPLE_SIZE = 150`. The
-exact quantity it is compared against (units, conversions or metric total) must be confirmed
-from the GrowthBook source before it is implemented. If confirmed, add
-`gbstats.seq.rel.guard150`: no decision before the guard passes. If it cannot be confirmed
-from source, drop the variant and say so in the report.
+GrowthBook's minimum sample size defaults to `DEFAULT_MIN_SAMPLE_SIZE = 150`. The variant
+`gbstats.seq.rel.guard150` (no decision before the guard passes) was planned on condition
+that the compared quantity be confirmed from the GrowthBook source first. That was not done
+in time, so the variant was dropped (section 13). The source check came later, at main
+`c176516097`: `hasEnoughData` in `packages/shared/src/experiments/experiments.ts` requires
+both arms' `value` to be non-zero and `max(baseline value, variation value) >= 150`, where
+`value` is the metric's main sum (conversions, or the summed metric value; quantile metrics
+use a count). It is therefore neither a count of users nor a per-arm minimum.
 
 ### 4.4 Reference implementations (absolute scale, n - 1 variances)
 
@@ -532,11 +538,12 @@ Cut or deferred, with reasons:
   spotify repository fixtures are not yet copied (this requires downloading the sdist and
   the repository). The randomised mirror-equals-engine grid and the in-loop checks are the
   main evidence.
-- **`gbstats.seq.rel.guard150`:** dropped as an engine variant (4.3). The quantity GrowthBook
-  compares with its minimum sample size has not been confirmed from source. In its place,
+- **`gbstats.seq.rel.guard150`:** dropped as an engine variant (4.3) because the quantity
+  GrowthBook compares with its minimum sample size was unconfirmed at the time. In its place,
   `peekaudit sensitivity` recomputes each sequential method's FPR counting only rejections
   at looks where both arms hold at least 150 units; the report shows it as a sensitivity
-  analysis, not as a model of the product.
+  analysis, not as a model of the product. The product rule, confirmed later (4.3), differs:
+  it compares the larger arm's metric total with 150.
 - **Full config:** k = 20 (stream140 spotify: 4), not 100, which would add about 10 CPU-hours
   of spotify bound solving; the quick config keeps k = 10 / 2.
 - **Unit JSON:** wall time and provenance (git SHA, versions) are stored in a separate
@@ -557,7 +564,9 @@ Cut or deferred, with reasons:
   result on either scale).
 - **Report content (6.4):** the generated report carries the detection limit, the findings
   list with Holm-adjusted p-values (split into sequential, single-look and coverage
-  findings), the limitations and this deviations list.
+  findings), the limitations and this deviations list. It has no "FPR vs N_max" figure (the
+  FPR figures are faceted by N_max instead). The stopping-look histogram of 6.1 stays in the
+  unit JSON; `summary.json` carries the first-look and small-arm rejection counts.
 - **Cross-study check (added after v0.1):** `peekaudit compare` tests every cell of a smaller
   study against a larger one with a two-sided Fisher exact test, Holm-adjusted per rate kind
   (FPR/power, coverage). Studies with the same master seed and chunk size, whose smaller

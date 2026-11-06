@@ -112,6 +112,11 @@ def compare_summaries(
         for r, q in zip(rows, adj, strict=True):
             r["holm_p"] = float(q)
         comparisons.extend(rows)
+    if not comparisons:
+        raise ValueError(
+            "nothing to compare: the studies are nested with the same replicate counts, so the "
+            "larger one has no independent replicates left"
+        )
 
     verdicts: Counter[tuple[str, str]] = Counter()
     claimed_changes: list[dict[str, Any]] = []

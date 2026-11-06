@@ -150,11 +150,12 @@ def check_conformance(
             f"{method.name} claims none of the battery's schedules {bat.schedules}"
             f" (claim: {method.claim!r})"
         )
+    metric_ids = [m for m in bat.metrics if method.supports(METRICS[m])]
+    if not metric_ids:
+        raise ValueError(f"{method.name} supports none of the battery's metrics {bat.metrics}")
     rep = ConformanceReport(method.name, bat.name, alpha, fwer=fwer)
-    for metric_id in bat.metrics:
+    for metric_id in metric_ids:
         metric = METRICS[metric_id]
-        if not method.supports(metric):
-            continue
         for n_max in bat.n_max:
             for pi in bat.allocations:
                 unit = Unit(metric_id, n_max, pi, "aa")
@@ -174,11 +175,10 @@ def check_conformance(
                             binom_sf_test(k, bat.reps, alpha),
                         )
                     )
-    if rep.cells:
-        adj = holm([c.p_value for c in rep.cells])
-        for c, a in zip(rep.cells, adj, strict=True):
-            c.holm_p = float(a)
-            c.violation = bool(a < fwer)
+    adj = holm([c.p_value for c in rep.cells])
+    for c, a in zip(rep.cells, adj, strict=True):
+        c.holm_p = float(a)
+        c.violation = bool(a < fwer)
     return rep
 
 

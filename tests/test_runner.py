@@ -85,6 +85,13 @@ def test_config_change_is_refused_and_invalidates(tmp_path: Path) -> None:
     assert not is_done(tmp_path, unit_from_id("normal-n1000-b50-aa"), other)
 
 
+def test_unmatched_units_glob_is_rejected_before_anything_is_written(tmp_path: Path) -> None:
+    out = tmp_path / "run"
+    with pytest.raises(ValueError, match="matches no unit"):
+        run_study(TINY, out, workers=1, units_glob="no-such-*", echo=_quiet)
+    assert not out.exists()
+
+
 def test_worker_cap() -> None:
     assert MAX_WORKERS == 4
     assert effective_workers(16) <= 4

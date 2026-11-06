@@ -41,4 +41,25 @@ reproduction. All were re-checked on 2026-10-30 against gbstats 0.8.0 and
 spotify-confidence 4.1.0 (still the latest PyPI releases) and still apply; the gbstats
 rare-event result is identical on GrowthBook main.
 
-Full list of changes: [CHANGELOG.md](../CHANGELOG.md).
+Full list of changes up to 2026-10-30: [CHANGELOG.md](../CHANGELOG.md).
+
+## Changes after the 2026-10-30 notes
+
+These are in `polish-2026-10-30` and are not listed in the changelog.
+
+- **Correction:** the reports said GrowthBook's product hides results below 150 units. Its
+  source compares 150 with the larger arm's metric total, so `guarded` (both arms at least
+  150 users) is not that rule. README, REPORT, DESIGN 4.3 and section 13, the gbstats draft
+  and the generated reports now say so. No study number changed.
+- `peekaudit run --units GLOB` now refuses a pattern that matches no unit, before writing
+  anything. It used to exit 0 having run nothing.
+- `check_conformance` and `assert_conforms` now refuse a method that supports none of the
+  battery's metrics. It used to pass with 0 cells.
+- `peekaudit compare` now refuses studies that hold the same replicates. It used to report 0
+  differences after comparing 0 cells.
+- A report no longer uses sensitivity checkpoints left by another config after `--force`.
+- The report states the study's own unit total instead of a fixed 52.
+- CLI usage errors (missing run folder or config, unknown method) exit 2 with a message
+  instead of a traceback.
+- CI actions are pinned to commit SHAs.
+- DESIGN sections 2, 3 and 13 updated to match the code and the full run.

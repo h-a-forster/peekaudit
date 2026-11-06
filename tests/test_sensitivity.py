@@ -64,3 +64,8 @@ def test_sensitivity_regenerates_the_run_and_feeds_the_report(tmp_path: Path) ->
     text = (tmp_path / "report" / "REPORT.md").read_text(encoding="utf-8")
     assert "## Sensitivity: rejections only where both arms hold >= 150 units" in text
     assert "Not computed" not in text
+    # A --force rerun with another config leaves the checkpoints of the old one behind.
+    other = StudyConfig.from_dict({**TINY.to_dict(), "r_aa": 200})
+    run_study(other, tmp_path, workers=1, force=True, echo=lambda _: None)
+    assert load_sensitivity(tmp_path) == []
+    assert report(tmp_path)["sensitivity_min_arm"] == []

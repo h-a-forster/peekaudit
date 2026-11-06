@@ -7,7 +7,7 @@ Evaluates spotify.gst, ref.gst_pow2 (same rho = 2 spending, reference variances)
 ref.gst_obf on the run's own data (see ``peekaudit.gst_reference``). One checkpoint per unit
 under ``<run>/gst_reference/``; a rerun skips finished units; failures are retried up to
 ``--attempts`` times. Writes ``gst_reference.{json,md}`` to ``--out``. The full run takes
-about 10 minutes on 3 workers.
+about 5 minutes on 3 workers.
 """
 
 from __future__ import annotations

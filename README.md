@@ -49,7 +49,9 @@ to B, the first of 140 looks has 6 users in A and 1 in B). The engine libraries 
 minimum sample size. The report therefore also gives each sequential cell's FPR counting
 only rejections at looks where both arms hold at least 150 units ("guarded"). Rare
 conversions are a separate problem: with 1% conversions the arms are large but the events
-are few, and the guard changes nothing.
+are few, so a guard on users does not remove the excess. GrowthBook's product applies a
+different rule, on metric totals (see the [report](REPORT.md#headline-results-full-study));
+it is not audited here.
 
 - **gbstats sequential test, default settings (relative effect):** holds 5% on normal data,
   10% conversions and the ratio metric. It violates in 14 of 96 claimed cells: lognormal
@@ -159,8 +161,9 @@ uv run peekaudit report runs/quick --publish docs/results/quick
 ```
 
 The run checkpoints one JSON file per unit, logs to `runs/quick/progress.log`, and resumes
-where it stopped; the wrapper retries up to three times. `--config smoke` finishes in a few
-minutes; `--config full` (20,000 / 10,000 replicates) took 53 minutes of wall time on 4
+where it stopped; the wrapper retries up to three times. `--config smoke` takes about
+20 minutes on 4 workers, or about 2 minutes with `--units 'normal-n1000-b50-*'` (2 units);
+`--config full` (20,000 / 10,000 replicates) took 53 minutes of wall time on 4
 workers (212 CPU-minutes); `--units 'normal-*'` and similar globs split it into shorter
 sessions writing to the same folder. `peekaudit compare SMALL LARGE --out STEM` cross-checks
 two published studies cell by cell. A resume keeps finished units even if the code changed since; `run` and `status`

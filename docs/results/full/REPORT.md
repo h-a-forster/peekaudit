@@ -332,8 +332,9 @@ binary variance p(1 - p) is 0 for a one-unit arm, so its standard error can be 0
 rest on the other arm alone, and it reports significance on 1 to 30 users in B;
 gbstats and the reference methods give no result for an arm with n <= 1, but a
 z-statistic on a few observations still rejects too often. The engines apply no
-minimum; GrowthBook's product layer hides results below a minimum sample
-size of 150 (not part of the audited library). The rows below recompute FPR counting
+minimum. GrowthBook's product layer (not part of the audited library) has its own
+rule: by default it hides a result until the larger arm's metric total reaches 150,
+which counts neither users nor the smaller arm. The rows below recompute FPR counting
 only rejections at looks where both arms hold at least 150 units (same data,
 same analysis, earlier results ignored), Holm-adjusted per method and family as in
 the main analysis. This is a sensitivity analysis, not a claim about any product.
@@ -482,8 +483,8 @@ Cells flagged in the main analysis:
 - **Small arms drive many excesses.** Rejections at looks with a handful of users in
   one arm account for most of several headline rates (see the sensitivity section).
   They are real outputs of the engines on these inputs, not adapter errors (the
-  mirrors match the engines on them), but a product with a minimum sample size would
-  hide them.
+  mirrors match the engines on them), but a product with a minimum sample size can
+  hide some of them.
 - **Single-look failures are not sequential failures.** A spotify.gst violation at
   `fixed1` is the single z-test at N_max with few events or heavy skew in the small arm
   (for example 1% conversions with 200 users in B); the findings list labels them
@@ -1968,11 +1969,12 @@ Cells flagged in the main analysis:
   spotify repository fixtures are not yet copied (this requires downloading the sdist and
   the repository). The randomised mirror-equals-engine grid and the in-loop checks are the
   main evidence.
-- **`gbstats.seq.rel.guard150`:** dropped as an engine variant (4.3). The quantity GrowthBook
-  compares with its minimum sample size has not been confirmed from source. In its place,
+- **`gbstats.seq.rel.guard150`:** dropped as an engine variant (4.3) because the quantity
+  GrowthBook compares with its minimum sample size was unconfirmed at the time. In its place,
   `peekaudit sensitivity` recomputes each sequential method's FPR counting only rejections
   at looks where both arms hold at least 150 units; the report shows it as a sensitivity
-  analysis, not as a model of the product.
+  analysis, not as a model of the product. The product rule, confirmed later (4.3), differs:
+  it compares the larger arm's metric total with 150.
 - **Full config:** k = 20 (stream140 spotify: 4), not 100, which would add about 10 CPU-hours
   of spotify bound solving; the quick config keeps k = 10 / 2.
 - **Unit JSON:** wall time and provenance (git SHA, versions) are stored in a separate
@@ -1993,7 +1995,9 @@ Cells flagged in the main analysis:
   result on either scale).
 - **Report content (6.4):** the generated report carries the detection limit, the findings
   list with Holm-adjusted p-values (split into sequential, single-look and coverage
-  findings), the limitations and this deviations list.
+  findings), the limitations and this deviations list. It has no "FPR vs N_max" figure (the
+  FPR figures are faceted by N_max instead). The stopping-look histogram of 6.1 stays in the
+  unit JSON; `summary.json` carries the first-look and small-arm rejection counts.
 - **Cross-study check (added after v0.1):** `peekaudit compare` tests every cell of a smaller
   study against a larger one with a two-sided Fisher exact test, Holm-adjusted per rate kind
   (FPR/power, coverage). Studies with the same master seed and chunk size, whose smaller

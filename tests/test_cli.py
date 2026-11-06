@@ -26,6 +26,23 @@ def test_no_command_prints_help() -> None:
     assert main([]) == 2
 
 
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["status", "no-such-run"],
+        ["report", "no-such-run"],
+        ["run", "--config", "no-such-config.json"],
+        ["verify", "--method", "no-such-method"],
+        ["verify", "--method", "ref.acs"],  # a reference method has no engine to compare with
+    ],
+)
+def test_usage_errors_exit_2_with_a_message(
+    argv: list[str], capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main(argv) == 2
+    assert capsys.readouterr().err.startswith("error: ")
+
+
 def test_environment_report_keys() -> None:
     report = environment_report()
     assert report["peekaudit"] == __version__

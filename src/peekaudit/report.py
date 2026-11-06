@@ -488,9 +488,8 @@ def write_report(
         f"- Replicates: {cfg['r_aa']:,} per A/A unit, {cfg['r_ab']:,} per A/B unit; chunks of "
         f"{cfg['chunk']}; master seed {cfg['master_seed']}; config hash "
         f"`{manifest['config_hash']}`.",
-        f"- Units: {len(units)} of 52 completed; methods: {len(methods)}; schedules: "
-        + ", ".join(cfg["schedules"])
-        + ".",
+        f"- Units: {len(units)} of {len(StudyConfig.from_dict(cfg).unit_list())} completed; "
+        f"methods: {len(methods)}; schedules: " + ", ".join(cfg["schedules"]) + ".",
         f"- Engine verification: first {cfg['k_verify']} replicates per unit and schedule "
         f"(spotify.gst on stream140: {cfg['k_verify_slow']}), real engine called look by look.",
         f"- Started {manifest.get('first_started')}; "
@@ -637,8 +636,9 @@ def _small_arm_section(sens_rows: list[dict[str, Any]]) -> list[str]:
         "rest on the other arm alone, and it reports significance on 1 to 30 users in B;",
         "gbstats and the reference methods give no result for an arm with n <= 1, but a",
         "z-statistic on a few observations still rejects too often. The engines apply no",
-        "minimum; GrowthBook's product layer hides results below a minimum sample",
-        "size of 150 (not part of the audited library). The rows below recompute FPR counting",
+        "minimum. GrowthBook's product layer (not part of the audited library) has its own",
+        "rule: by default it hides a result until the larger arm's metric total reaches 150,",
+        "which counts neither users nor the smaller arm. The rows below recompute FPR counting",
         f"only rejections at looks where both arms hold at least {MIN_ARM} units (same data,",
         "same analysis, earlier results ignored), Holm-adjusted per method and family as in",
         "the main analysis. This is a sensitivity analysis, not a claim about any product.",
@@ -697,8 +697,8 @@ def _limitations_section(rows: list[dict[str, Any]]) -> list[str]:
         "- **Small arms drive many excesses.** Rejections at looks with a handful of users in",
         "  one arm account for most of several headline rates (see the sensitivity section).",
         "  They are real outputs of the engines on these inputs, not adapter errors (the",
-        "  mirrors match the engines on them), but a product with a minimum sample size would",
-        "  hide them.",
+        "  mirrors match the engines on them), but a product with a minimum sample size can",
+        "  hide some of them.",
         "- **Single-look failures are not sequential failures.** A spotify.gst violation at",
         "  `fixed1` is the single z-test at N_max with few events or heavy skew in the small arm",
         "  (for example 1% conversions with 200 users in B); the findings list labels them",

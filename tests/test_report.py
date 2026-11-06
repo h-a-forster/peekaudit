@@ -89,6 +89,7 @@ def test_report_states_limits_findings_and_deviations(run_dir: Path) -> None:
     ):
         assert heading in text
     assert "PyPI" in text and "stream140 understates continuous monitoring" in text
+    assert "Units: 3 of 3 completed" in text
     assert "**Lognormal variance:**" in text  # DESIGN section 13 is copied in
     rows = summary["cells"]
     lim = detection_limits(rows)

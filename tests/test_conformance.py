@@ -41,6 +41,13 @@ def test_method_claiming_no_battery_schedule_is_an_error() -> None:
         check_conformance(NaiveZ(), SMALL)  # fixed-horizon only; battery uses daily14
 
 
+def test_method_supporting_no_battery_metric_is_an_error() -> None:
+    always = ScalarMethod("always", lambda *_: (1, 0.0, 0.0))  # scalar methods skip ratio metrics
+    ratio_only = Battery("ratio", ("ratio",), (2000,), (0.5,), ("daily14",), 10)
+    with pytest.raises(ValueError, match="supports none"):
+        assert_conforms(always, ratio_only)
+
+
 def test_scalar_method_bonferroni_conforms() -> None:
     """A user-supplied per-look callback: z-test at alpha/14 per look (Bonferroni)."""
     from scipy.stats import norm

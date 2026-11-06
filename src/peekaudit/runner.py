@@ -459,6 +459,11 @@ def run_study(
 ) -> RunResult:
     """Run (or resume) a study. Completed units are skipped unless ``force``."""
     cfg.validate()  # before anything is written, so a bad config never claims the folder
+    units = cfg.unit_list()
+    if units_glob:
+        units = [u for u in units if fnmatch.fnmatch(u.id, units_glob)]
+        if not units:
+            raise ValueError(f"--units {units_glob!r} matches no unit of study {cfg.name!r}")
     out = Path(out_dir)
     from peekaudit.cli import environment_report
 
@@ -495,9 +500,6 @@ def run_study(
     (out / "cache").mkdir(exist_ok=True)
     _atomic_write(manifest_path, json.dumps(manifest, indent=1, sort_keys=True))
 
-    units = cfg.unit_list()
-    if units_glob:
-        units = [u for u in units if fnmatch.fnmatch(u.id, units_glob)]
     todo = [u for u in units if force or not is_done(out, u, cfg)]
     todo.sort(key=_cost, reverse=True)
     todo_ids = {u.id for u in todo}

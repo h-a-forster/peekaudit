@@ -32,8 +32,7 @@ conformance check.
   just point estimates; Holm within the families of DESIGN section 6.2; state the Monte
   Carlo detection limit. A suspected engine defect needs a minimal standalone repro and an
   independent check that it is not an adapter mistake (DESIGN 5.2, item 4).
-- Commits: end messages with the project's co-author trailer. Never push, create remotes or
-  publish without the owner's go-ahead.
+- Never push, create remotes or publish without the owner's go-ahead.
 
 ## Architecture map
 
@@ -71,7 +70,8 @@ uv run ruff format --check .
 ```
 
 CI (`.github/workflows/ci.yml`) runs on `pull_request` and `workflow_dispatch` only:
-ubuntu py3.11, ubuntu py3.13, windows py3.13, plus a lint job.
+ubuntu py3.11, ubuntu py3.13, windows py3.13, plus a lint job. It has not run yet: the
+repository has had no pull request or dispatch.
 
 ## How to run the study
 
@@ -120,8 +120,10 @@ report lists every git SHA found.
   pin). The audit covers PyPI only. The rare-event repro gives identical numbers on main.
 - GrowthBook product defaults (`packages/shared/src/constants.ts`, commit de93c5d6e1):
   sequential off, tuning 5000, confidence level 0.95, min sample size 150 (product layer).
+  The product compares 150 with the larger arm's metric total, not users per arm (main
+  c176516097, `hasEnoughData`); `peekaudit sensitivity` counts users, so it is not that rule.
 
-## Status and next steps (2026-10-30)
+## Status and next steps (2026-11-06)
 
 - **Done (M0):** scaffold, `stats.py`, `gst.py`, engine environment tests, CLI `versions`,
   `scripts/reference_values.py`, DESIGN.md.
@@ -201,15 +203,12 @@ report lists every git SHA found.
   (still the latest PyPI releases; spotify main equals 4.1.0) and GrowthBook main
   830555b9c1: all still apply, results unchanged. Hygiene scan of tracked files and history:
   clean.
-- **Not done / next:** decide which upstream drafts to file (search the trackers first);
-  tag v0.1.1 (v0.1.0 was never tagged); copying the gbstats sdist
-  and spotify repo fixtures (needs a download); a guarded gbstats engine variant once the
-  product's minimum-sample rule is confirmed from source (the sensitivity analysis is the
-  interim answer). The README install points at the repository without a tag until one exists.
-- **Deferred: variance reduction (CUPED).** Not started in round 2: doing it robustly needs a
-  pre-period covariate in `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic),
-  a gbstats `RegressionAdjustedStatistic` sequential adapter with its own mirror or direct
-  engine calls plus verification, true-effect and coverage definitions under adjustment, and
-  a separate small study (`runs/cuped`, `docs/results/cuped`; e.g. normal and lognormal with
+- **Open work** lives in [backlog.md](backlog.md). The README install points at the
+  repository without a tag until one exists.
+- **Deferred: variance reduction (CUPED).** Doing it robustly needs a pre-period covariate in
+  `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic), a gbstats
+  `RegressionAdjustedStatistic` sequential adapter with its own mirror or direct engine
+  calls plus verification, true-effect and coverage definitions under adjustment, and a
+  separate small study (`runs/cuped`, `docs/results/cuped`; e.g. normal and lognormal with
   correlation 0.5 and 0.8, N_max 1,000 and 20,000, daily14 and stream140, R_AA = 4,000).
   Estimated 4-6 h including validation; it must not touch `runs/full`.

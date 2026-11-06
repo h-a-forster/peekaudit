@@ -237,4 +237,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not hasattr(args, "func"):
         parser.print_help(sys.stderr)
         return 2
-    return int(args.func(args))
+    try:
+        return int(args.func(args))
+    except (OSError, KeyError, ValueError, RuntimeError) as exc:  # exit 2, as `conform` does
+        print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 2

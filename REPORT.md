@@ -60,12 +60,15 @@ standard error of 0, or a z-statistic rests on a few observations. spotify repor
 significance on 1 to 30 users in B: for 0/1 data it uses the variance p(1 - p), which is 0
 for a one-unit arm, so even a single user in B can give a significant result. gbstats (and
 peekaudit's reference methods) refuse an arm with n <= 1, because its sample variance is
-then 0 or undefined. The engine libraries apply no minimum sample size
-(GrowthBook's product layer hides results below 150 units; that layer is not audited). The
-"guarded" rates below count only rejections at looks where both arms hold at least 150
-units (same data and analysis; a sensitivity analysis, not a model of any product). Rare
-conversions are a separate problem: with 1% conversions the arms are large but the events
-are few, and the guard changes nothing.
+then 0 or undefined. The engine libraries apply no minimum sample size. The "guarded" rates
+below count only rejections at looks where both arms hold at least 150 units (same data and
+analysis; a sensitivity analysis, not a model of any product). GrowthBook's product layer,
+which is not audited, uses a different rule: by default it hides a result until the larger
+arm's metric total (conversions, or the summed metric value) reaches 150 and both arms'
+totals are non-zero, so it counts neither users nor the smaller arm. Rare conversions are a
+separate problem: with 1% conversions the arms are large but the events are few, so a guard
+on users does not remove the excess. GrowthBook's rule counts conversions and would treat
+these cells differently; it is not simulated here.
 
 ### gbstats 0.8.0, sequential test (asymptotic confidence sequence)
 
@@ -81,7 +84,7 @@ no minimum sample size or tail condition.
   - Lognormal, N_max = 20,000, 20% to B, 140 looks: 11.9% [11.5, 12.4]; guarded still
     9.0% [8.6, 9.4]. Here the arms are large and the excess comes from skew.
   - 1% conversions: from 6.3% [6.0, 6.7] (N_max = 20,000, 50/50, daily looks) to 14.1%
-    [13.7, 14.6] (same, 140 looks). The guard changes none of them.
+    [13.7, 14.6] (same, 140 looks). The guard on users changes none of them.
   - Guarded, 10 of 96 primary cells still violate (the nine 1% conversion cells and
     lognormal at N_max = 20,000); stress family guarded: 3 of 16.
   - Stress (Pareto tail 1.5): up to 14.3% [13.8, 14.8] (N_max = 20,000, 20% to B, 140 looks).

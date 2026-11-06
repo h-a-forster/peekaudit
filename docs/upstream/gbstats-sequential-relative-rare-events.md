@@ -80,7 +80,8 @@ absolute one.
 
 - The confidence sequence is asymptotic (Waudby-Smith et al.), so some excess at small
   samples is expected in theory; the request is mainly to document a minimum, or to apply
-  one in the library as the GrowthBook product does in its UI.
+  one in the library. The GrowthBook product has a related rule in its UI: by default a
+  result stays hidden until the larger arm's metric total reaches 150.
 - The study's engine figures come from a vectorised re-implementation of the engine
   arithmetic that agrees with `SequentialTwoSidedTTest` exactly on the 183,040 replicate-looks
   where both were computed in the study and on randomised input grids; the reproduction

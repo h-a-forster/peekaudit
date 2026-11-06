@@ -92,6 +92,12 @@ def test_inconsistent_nesting_raises() -> None:
     assert compare_summaries(small, large, nested=False)["nested"] is False
 
 
+def test_same_replicates_refuse_instead_of_passing_vacuously() -> None:
+    study = _summary("q", 4000, [_cell(200, 4000)])
+    with pytest.raises(ValueError, match="no independent replicates"):
+        compare_summaries(study, copy.deepcopy(study))
+
+
 def test_no_shared_cells_raises() -> None:
     other = copy.deepcopy(_cell(1, 10))
     other["unit"] = "v-aa"

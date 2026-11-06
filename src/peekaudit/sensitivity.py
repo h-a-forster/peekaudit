@@ -5,8 +5,10 @@ holds a handful of users: a zero-variance arm gives a standard error of 0, or a 
 rests on a few observations, and the engine reports significance. This module recomputes,
 for the A/A units of a finished run, the FPR when rejections are only counted at looks where
 both arms hold at least ``min_arm`` units (the analysis is unchanged; earlier results are
-ignored, as a dashboard with a minimum sample size would hide them). GrowthBook's product
-layer uses 150 (DESIGN 4.3); the engine libraries audited here apply no minimum.
+ignored, as a dashboard with a minimum sample size could hide them). The engine libraries
+audited here apply no minimum. The threshold is GrowthBook's default of 150, but its product
+rule compares the larger arm's metric total, not users per arm (DESIGN 4.3), so this is a
+sensitivity analysis and not a model of that rule.
 
 The data are regenerated from the run's config and seeds, so the unguarded rejection count
 of every cell must equal the run's own count; cells that do not match are flagged and the
@@ -33,7 +35,8 @@ from peekaudit.runner import StudyConfig, effective_workers, read_unit, unit_com
 from peekaudit.scenarios import Unit, arm_counts, unit_from_id
 from peekaudit.simulate import chunk_sizes, generate_chunk
 
-#: GrowthBook's product-layer minimum sample size (packages/shared/src/constants.ts).
+#: Default minimum per arm: the number in GrowthBook's DEFAULT_MIN_SAMPLE_SIZE
+#: (packages/shared/src/constants.ts), applied here to users.
 MIN_ARM = 150
 #: Methods with a sequential claim (DESIGN 6.3).
 SEQUENTIAL_METHODS: tuple[str, ...] = (
@@ -203,8 +206,13 @@ def run_sensitivity(
 
 
 def load_sensitivity(run_dir: str | Path, min_arm: int = MIN_ARM) -> list[dict[str, Any]]:
-    """Checkpoints of a finished sensitivity run (empty if none)."""
+    """Checkpoints of the run's current config (empty if none).
+
+    A ``--force`` rerun with another config keeps the folder, so older checkpoints are skipped.
+    """
     d = sensitivity_dir(run_dir, min_arm)
     if not d.exists():
         return []
-    return [json.loads(p.read_text(encoding="utf-8")) for p in sorted(d.glob("*.json"))]
+    manifest = json.loads((Path(run_dir) / "manifest.json").read_text(encoding="utf-8"))
+    rows = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(d.glob("*.json"))]
+    return [r for r in rows if r.get("config_hash") == manifest["config_hash"]]
