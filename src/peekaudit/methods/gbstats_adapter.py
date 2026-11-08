@@ -40,8 +40,10 @@ def gbstats_arm(stats: LookStats, arm: str) -> tuple[np.ndarray, np.ndarray]:
     with np.errstate(divide="ignore", invalid="ignore"):
         mean_s = np.where(n == 0, 0.0, s / n)
 
+        # s * s, not np.power: NumPy 1.26's AVX-512 power is off by ulps, which turns a zero
+        # variance into a small nonzero one and flips the engine's zero-variance branch.
         def sm_var(sum_: np.ndarray, sumsq: np.ndarray) -> np.ndarray:
-            return np.where(n <= 1, 0.0, (sumsq - np.power(sum_, 2) / n) / (n - 1))
+            return np.where(n <= 1, 0.0, (sumsq - sum_ * sum_ / n) / (n - 1))
 
         if stats.ratio:
             d = getattr(stats, f"dsum_{arm}")

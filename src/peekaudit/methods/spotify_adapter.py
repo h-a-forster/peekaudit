@@ -72,7 +72,7 @@ def _moments(stats: LookStats, cumulative: bool) -> dict[str, np.ndarray]:
             s = getattr(stats, f"sum_{arm}")
             q = getattr(stats, f"sumsq_{arm}")
             pe = s / n
-            v = np.where(binary, q / n - pe**2, (q - np.power(s, 2) / n) / (n - 1))
+            v = np.where(binary, q / n - pe**2, (q - s * s / n) / (n - 1))
             bad |= v < 0
             out[f"pe_{arm}"], out[f"v_{arm}"] = pe, v
         # The engine's powered-effect search (run on every call) raises IndexError when the
