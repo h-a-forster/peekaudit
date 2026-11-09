@@ -203,7 +203,7 @@ report lists every git SHA found.
   (still the latest PyPI releases; spotify main equals 4.1.0) and GrowthBook main
   830555b9c1: all still apply, results unchanged. Hygiene scan of tracked files and history:
   clean.
-- **Open work** lives in [backlog.md](backlog.md). The README install points at the
+- **Open work** lives in `backlog.md`. The README install points at the
   repository without a tag until one exists.
 - **Deferred: variance reduction (CUPED).** Doing it robustly needs a pre-period covariate in
   `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic), a gbstats
