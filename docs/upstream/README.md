@@ -1,7 +1,9 @@
 # Upstream issue drafts
 
-Draft issue texts for engine behaviours found while building peekaudit. **None of them has
-been filed.** All five were last re-checked on 2026-10-30 against the latest PyPI releases
+Issue texts for engine behaviours found while building peekaudit, as written before
+filing. Four were filed on 2026-11-07 and the overrun draft was posted as a comment on
+spotify/confidence#110 on 2026-11-12; [../upstream.md](../upstream.md) links them and their
+current state. The single-unit binary-arm draft was not filed. All five were last re-checked on 2026-10-30 against the latest PyPI releases
 (gbstats 0.8.0, spotify-confidence 4.1.0; spotify's main branch equals 4.1.0) and still
 apply; the gbstats rare-event result is also identical on GrowthBook main (830555b9c1).
 Each engine-behaviour draft has a standalone reproduction in `scripts/` that imports only

@@ -106,8 +106,8 @@ particular that gbstats 0.8.0 on PyPI is older than the code GrowthBook runs tod
 You need [uv](https://docs.astral.sh/uv/). peekaudit is distributed from git only.
 
 ```sh
-# as a tool, from git (pin a release tag once one is published); --python 3.11 is required
-uv tool install --python 3.11 "peekaudit[engines] @ git+https://github.com/h-a-forster/peekaudit"
+# as a tool, from git, pinned to the latest release; --python 3.11 is required
+uv tool install --python 3.11 "peekaudit[engines] @ git+https://github.com/h-a-forster/peekaudit@v0.1.1"
 
 # or for development (canonical study environment: Python 3.11)
 git clone https://github.com/h-a-forster/peekaudit
@@ -193,7 +193,10 @@ spotify-confidence exception on a single-unit control group (outside the study g
 sequential bounds for earlier looks changing once a later look exceeds the planned size; and
 [scripts/gbstats_rare_conversion_repro.py](scripts/gbstats_rare_conversion_repro.py)
 simulates the gbstats sequential test on 1% conversions (relative vs absolute effect).
-Draft upstream issue texts (not filed) are in [docs/upstream/](docs/upstream/README.md).
+Issues filed upstream from these findings and their outcomes are in
+[docs/upstream.md](docs/upstream.md); the issue texts are in [docs/upstream/](docs/upstream/README.md).
+A 2026-11-09 study of three more engines (tea-tasting, expectation, gsdesign) is in
+[docs/results/newlib-2026-11-09/](docs/results/newlib-2026-11-09/README.md).
 
 ## Scope
 

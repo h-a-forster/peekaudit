@@ -32,7 +32,7 @@ conformance check.
   just point estimates; Holm within the families of DESIGN section 6.2; state the Monte
   Carlo detection limit. A suspected engine defect needs a minimal standalone repro and an
   independent check that it is not an adapter mistake (DESIGN 5.2, item 4).
-- Never push, create remotes or publish without the owner's go-ahead.
+- The repository is public on GitHub; push, tag or publish only with the owner's go-ahead.
 
 ## Architecture map
 
@@ -171,7 +171,7 @@ report lists every git SHA found.
   tested against full's remaining replicates. 0 of 2,224 cells differ after Holm (FPR/power
   and coverage); all 132 quick violations confirmed; 43 consistent -> violation, all within
   the quick 95% interval (<= 6.7% FPR). `docs/results/full/quick_vs_full.{md,json}`.
-- **Done (upstream drafts):** `docs/upstream/` holds four drafts (not filed): spotify
+- **Done (upstream drafts):** `docs/upstream/` holds four drafts (filed 2026-11-07 and 11-12; `docs/upstream.md`): spotify
   IndexError, spotify bounds after overrun, gbstats relative FPR with few events / tiny arms,
   gbstats PyPI vs main (re-check before filing). Standalone repros in `scripts/`, tested in
   `tests/test_scripts.py`. A fifth draft (round 3, below): spotify significance from a
@@ -198,13 +198,12 @@ report lists every git SHA found.
   and "1 to 30 users" attributed to spotify; README `uv tool install --python 3.11`.
   Generated reports for quick and full republished (text and deviations only; numbers
   unchanged). No study re-run was needed.
-- **Done (2026-10-30, 0.1.1):** CHANGELOG 0.1.1 and `docs/release-notes-0.1.1.md` (no tag);
+- **Done (2026-10-30, 0.1.1):** CHANGELOG 0.1.1 and `docs/release-notes-0.1.1.md` (tagged and released as `v0.1.1`);
   all five upstream drafts re-checked against gbstats 0.8.0 / spotify-confidence 4.1.0
   (still the latest PyPI releases; spotify main equals 4.1.0) and GrowthBook main
   830555b9c1: all still apply, results unchanged. Hygiene scan of tracked files and history:
   clean.
-- **Open work** lives in `backlog.md`. The README install points at the
-  repository without a tag until one exists.
+- **Open work** lives in `backlog.md` (gitignored). The README install pins `v0.1.1`.
 - **Deferred: variance reduction (CUPED).** Doing it robustly needs a pre-period covariate in
   `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic), a gbstats
   `RegressionAdjustedStatistic` sequential adapter with its own mirror or direct engine
