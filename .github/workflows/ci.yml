@@ -1,7 +1,8 @@
 name: CI
 
-# Pull requests and manual dispatch only (no push trigger).
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
