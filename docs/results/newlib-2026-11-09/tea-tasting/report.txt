@@ -1,0 +1,63 @@
+fixed1 A/A cells 76 violate after Holm 4
+  bern_p01-n1000-b20-aa welch_t 14.2% [13.2,15.3] holm 1.4e-106 nan=0
+  bern_p01-n1000-b20-aa z 14.2% [13.2,15.3] holm 1.4e-106 nan=0
+  lognorm-n1000-b20-aa welch_t 7.0% [6.3,7.9] holm 1.2e-06 nan=0
+  lognorm-n1000-b20-aa z 7.1% [6.3,7.9] holm 5.6e-07 nan=0
+peeked daily14 (informational)
+  normal-n1000-b50-aa welch_t 20.7% [18.2,23.3] 1000
+  normal-n1000-b50-aa z 20.9% [18.4,23.6] 1000
+  normal-n1000-b50-aa student_t 20.8% [18.3,23.4] 1000
+  normal-n1000-b20-aa welch_t 20.6% [18.1,23.2] 1000
+  normal-n1000-b20-aa z 21.7% [19.2,24.4] 1000
+  normal-n1000-b20-aa student_t 21.0% [18.5,23.7] 1000
+  normal-n20000-b50-aa welch_t 22.0% [19.5,24.7] 1000
+  normal-n20000-b50-aa z 22.0% [19.5,24.7] 1000
+  normal-n20000-b50-aa student_t 22.0% [19.5,24.7] 1000
+  normal-n20000-b20-aa welch_t 22.7% [20.1,25.4] 1000
+  normal-n20000-b20-aa z 22.8% [20.2,25.5] 1000
+  normal-n20000-b20-aa student_t 22.9% [20.3,25.6] 1000
+  bern_p10-n1000-b50-aa welch_t 21.8% [19.3,24.5] 1000
+  bern_p10-n1000-b50-aa z 22.9% [20.3,25.6] 1000
+  bern_p10-n1000-b50-aa student_t 21.8% [19.3,24.5] 1000
+  bern_p10-n1000-b50-aa prop_norm_pooled 14.6% [12.5,16.9] 1000
+  bern_p10-n1000-b50-aa prop_norm_unpooled 15.7% [13.5,18.1] 1000
+  bern_p10-n1000-b20-aa welch_t 33.6% [30.7,36.6] 1000
+  bern_p10-n1000-b20-aa z 34.2% [31.3,37.2] 1000
+  bern_p10-n1000-b20-aa student_t 20.3% [17.8,22.9] 1000
+  bern_p10-n1000-b20-aa prop_norm_pooled 12.9% [10.9,15.1] 1000
+  bern_p10-n1000-b20-aa prop_norm_unpooled 20.1% [17.7,22.7] 1000
+  bern_p10-n20000-b50-aa welch_t 21.8% [19.3,24.5] 1000
+  bern_p10-n20000-b50-aa z 21.8% [19.3,24.5] 1000
+  bern_p10-n20000-b50-aa student_t 21.8% [19.3,24.5] 1000
+  bern_p10-n20000-b50-aa prop_norm_pooled 19.5% [17.1,22.1] 1000
+  bern_p10-n20000-b50-aa prop_norm_unpooled 19.5% [17.1,22.1] 1000
+  bern_p10-n20000-b20-aa welch_t 25.0% [22.3,27.8] 1000
+  bern_p10-n20000-b20-aa z 25.0% [22.3,27.8] 1000
+  bern_p10-n20000-b20-aa student_t 23.6% [21.0,26.4] 1000
+  bern_p10-n20000-b20-aa prop_norm_pooled 21.5% [19.0,24.2] 1000
+  bern_p10-n20000-b20-aa prop_norm_unpooled 23.4% [20.8,26.2] 1000
+A/B coverage cells 152 below 95% after Holm 23
+  normal-n1000-b20-ab student_t cov_abs 0.9163 holm 2.6e-17
+  bern_p10-n1000-b20-ab student_t cov_abs 0.9120 holm 1.3e-21
+  bern_p10-n1000-b20-ab prop_norm_pooled cov_abs 0.9313 holm 1.9e-05
+  bern_p10-n20000-b20-ab student_t cov_abs 0.9350 holm 0.0022
+  bern_p10-n20000-b20-ab prop_norm_pooled cov_abs 0.9373 holm 0.026
+  bern_p01-n1000-b20-ab welch_t cov_abs 0.9363 holm 0.0091
+  bern_p01-n1000-b20-ab z cov_abs 0.9293 holm 1.1e-06
+  bern_p01-n1000-b20-ab student_t cov_abs 0.7827 holm 2.3e-291
+  bern_p01-n1000-b20-ab prop_norm_pooled cov_abs 0.8528 holm 1.9e-116
+  bern_p01-n20000-b20-ab student_t cov_abs 0.9205 holm 2.1e-13
+  bern_p01-n20000-b20-ab prop_norm_pooled cov_abs 0.9297 holm 2.2e-06
+  lognorm-n1000-b50-ab welch_t cov_rel 0.9335 holm 0.00037
+  lognorm-n1000-b50-ab z cov_rel 0.9325 holm 0.0001
+  lognorm-n1000-b50-ab student_t cov_rel 0.9335 holm 0.00037
+  lognorm-n1000-b20-ab welch_t cov_abs 0.8832 holm 3e-60
+  lognorm-n1000-b20-ab welch_t cov_rel 0.9213 holm 9.4e-13
+  lognorm-n1000-b20-ab z cov_abs 0.8822 holm 7.4e-62
+  lognorm-n1000-b20-ab z cov_rel 0.9193 holm 1.7e-14
+  lognorm-n1000-b20-ab student_t cov_abs 0.7745 holm 1.5e-315
+  lognorm-n20000-b20-ab student_t cov_abs 0.9263 holm 8.7e-09
+  pareto_a25-n1000-b20-ab welch_t cov_abs 0.9347 holm 0.0017
+  pareto_a25-n1000-b20-ab z cov_abs 0.9343 holm 0.00093
+  pareto_a25-n1000-b20-ab student_t cov_abs 0.9285 holm 3.3e-07
+errs {} nan cells []

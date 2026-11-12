@@ -1,0 +1,4 @@
+0.1 -> 0.3, n 8000/2000: absolute CI covers 0.888 (large-sample limit 0.885), relative CI covers 0.990, nominal 0.950
+0.1 -> 0.3, n 80000/20000: absolute CI covers 0.891 (large-sample limit 0.885), relative CI covers 0.988, nominal 0.950
+0.3 -> 0.1, n 8000/2000: absolute CI covers 0.988 (large-sample limit 0.989), relative CI covers 0.782, nominal 0.950
+0.05 -> 0.1, n 18000/2000: absolute CI covers 0.884 (large-sample limit 0.873), relative CI covers 0.991, nominal 0.950

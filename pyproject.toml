@@ -93,6 +93,8 @@ filterwarnings = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# Archived study scripts, kept as they were run.
+extend-exclude = ["docs/results/newlib-2026-11-09"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM"]

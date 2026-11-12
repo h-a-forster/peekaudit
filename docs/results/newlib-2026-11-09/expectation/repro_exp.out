@@ -1,0 +1,16 @@
+1 README import:
+  ImportError cannot import name 'SequentialTesting' from 'expectation.seqtest' (<venv>\Lib\site-packages\expectation\seqtest\__init__.py)
+2 proportion one observation:
+  0.5 two_sided ValueError f(a) and f(b) must have different signs
+   at ['_compute_confidence_bounds:535', '_compute_proportion_confidence_bounds:615', 'bernoulli_confidence_interval:210', 'bisect:607']
+  0.1 greater ValueError f(a) and f(b) must have different signs
+   at ['_compute_confidence_bounds:535', '_compute_proportion_confidence_bounds:615', 'bernoulli_confidence_interval:210', 'bisect:607']
+  batch ok 0.7996138218480758
+  batch ok 0.7979837469608019
+3 mean, default, one at a time, N(0,1), 500 obs, 400 reps; known_variance=1 as control
+  default: FPR 0.250 [0.208,0.295] median first rejection n=2.0
+  known_var: FPR 0.022 [0.010,0.042] median first rejection n=4.0
+4 first rejection anatomy: x=[0.1, 0.11] (sd small)
+   0.1 e-process 0.336 reject False
+   0.11 e-process 1.938 reject False
+   0.09 e-process 15.075 reject False

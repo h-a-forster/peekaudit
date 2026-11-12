@@ -1,0 +1,31 @@
+51 cells; violating after Holm 9
+  mean/default normal two_sided b1 171/627=0.273 [0.238,0.309] holm 1.6e-73
+  mean/default normal_sd3 two_sided b1 311/634=0.491 [0.451,0.530] holm 1.6e-221
+  mean/default normal_sd3 greater b1 5/14=0.357 [0.128,0.649] holm 0.018
+  mean/default normal_sd01 two_sided b1 60/665=0.090 [0.070,0.115] holm 0.00047
+  mean/default uniform two_sided b1 247/691=0.357 [0.322,0.394] holm 4.1e-136
+  mean/default t3 two_sided b1 181/657=0.275 [0.242,0.311] holm 1.4e-78
+  parallel/empirical_var_sd3 28610/100000=0.286 [0.283,0.289] holm 0
+  cs/eb[0,2]/uniform 300/300=1.000 [0.988,1.000] holm 0
+  cs/eb[0,10]/uniform 300/300=1.000 [0.988,1.000] holm 0
+errors by row:
+  mean/default normal_sd3 two_sided 1 6 / 640 ValueError:Infinite e-value inf not allowed by con
+  mean/default t3 two_sided 1 2 / 659 ValueError:Infinite e-value inf not allowed by con
+  proportion/default bern50 two_sided 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern50 two_sided 10 1 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern50 greater 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern50 greater 10 3 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern50 less 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern50 less 10 4 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern10 two_sided 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern10 two_sided 10 334 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern10 greater 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern10 greater 10 340 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern10 less 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern10 less 10 345 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern01 two_sided 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern01 two_sided 10 895 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern01 greater 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern01 greater 10 916 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern01 less 1 1000 / 1000 ValueError:f(a) and f(b) must have different signs
+  proportion/default bern01 less 10 921 / 1000 ValueError:f(a) and f(b) must have different signs

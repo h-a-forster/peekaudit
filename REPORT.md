@@ -205,8 +205,9 @@ example, gbstats sequential, lognormal, N_max = 1,000, 20% to B, 140 looks: quic
 ## Engine behaviours
 
 Each item has a standalone reproduction that imports only the engine (plus numpy, scipy and
-pandas), so it cannot come from peekaudit's adapters. Draft issue texts are in
-[docs/upstream/](docs/upstream/README.md); none has been filed.
+pandas), so it cannot come from peekaudit's adapters. Behaviours 1 to 4 and the overrun
+comment were reported upstream; [docs/upstream.md](docs/upstream.md) lists the issues and
+their state. The issue texts are in [docs/upstream/](docs/upstream/README.md).
 
 1. **spotify-confidence 4.1.0, exception:** `ZTest.difference` raises `IndexError` when the
    control group has a single unit with value 0
@@ -242,6 +243,29 @@ pandas), so it cannot come from peekaudit's adapters. Draft issue texts are in
 The other spotify GST excesses on small, skewed or rare-event arms are not drafted: a
 reference GST with the same spending function violates in exactly the same cells, so they
 are a property of the test, not engine defects.
+
+## Three more engines (2026-11-09)
+
+Outside the full study, peekaudit's simulators, Clopper-Pearson intervals, exact binomial
+test and Holm were run against three more Python libraries with real engine calls and no
+mirrors. Scripts, cell records and tables:
+[docs/results/newlib-2026-11-09](docs/results/newlib-2026-11-09/README.md).
+
+- **tea-tasting 2.0.0** makes no sequential claim, so its peeking inflation (about 21% with
+  14 looks on normal data) is informational. One defect: the default `Proportion`
+  interval (`equal_var=True`) pools the variance for the confidence interval too, so it
+  misses its level at any sample size when the rates differ. 0.10 -> 0.30 at 8,000/2,000:
+  the absolute interval covers 0.888 at a nominal 0.95, 0.891 at ten times the size; 0.30 ->
+  0.10: the relative interval covers 0.782. Unpooled controls cover 0.948-0.957. Filed as
+  tea-tasting#327.
+- **expectation 0.6.1** claims validity under continuous monitoring. 9 of 51 cells violate
+  after Holm, all already reported in the maintainer's open #154: the default mean test
+  with empirical variance has 27.3% [23.8, 30.9] FPR at a nominal 5% on N(0, 1) when updated
+  one observation at a time (known variance: 2.1%). New, filed as expectation#155: the
+  proportion test raises `ValueError` while all observations are 0 or all 1, and the
+  README's first import fails.
+- **gsdesign 0.1.5** (group sequential densities, no peeking claim) is clean: crossing
+  probabilities within 8e-7 of `peekaudit.gst` for K up to 50.
 
 ## Limitations
 
