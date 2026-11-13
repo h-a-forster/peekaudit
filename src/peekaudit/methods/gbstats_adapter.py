@@ -9,6 +9,8 @@ The engine is imported lazily so the core package does not depend on it. DESIGN 
 
 from __future__ import annotations
 
+import inspect
+from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
@@ -129,6 +131,32 @@ def _engine_stat(stats: LookStats, arm: str, i: int, j: int) -> Any:
     return SampleMeanStatistic(n=n, sum=s, sum_squares=q)
 
 
+def _compute(test_cls: Any, stat_a: Any, stat_b: Any, cfg: Any) -> SimpleNamespace:
+    """Run one engine test and return its result under the 0.8.0 (PyPI) field names.
+
+    gbstats 0.8.0 on PyPI takes ``(stat_a, stat_b, config)`` and returns snake_case fields.
+    GrowthBook main (the code the product runs; the living audit's ``gbstats-main``) takes
+    ``([(stat_a, stat_b)], config)`` and returns camelCase fields (``errorMessage``,
+    ``pValue``, ``chanceToWin``). Nothing else about the call differs.
+    """
+    params = list(inspect.signature(test_cls.__init__).parameters)
+    if params[1] == "stats":
+        res = test_cls([(stat_a, stat_b)], cfg).compute_result()
+    else:
+        res = test_cls(stat_a, stat_b, cfg).compute_result()
+
+    def get(snake: str, camel: str) -> Any:
+        return getattr(res, snake) if hasattr(res, snake) else getattr(res, camel, None)
+
+    return SimpleNamespace(
+        error_message=get("error_message", "errorMessage"),
+        ci=res.ci,
+        expected=res.expected,
+        p_value=get("p_value", "pValue"),
+        chance_to_win=get("chance_to_win", "chanceToWin"),
+    )
+
+
 class _GbstatsMethod(Method):
     def supports(self, metric: Metric) -> bool:  # noqa: ARG002
         return True
@@ -183,10 +211,10 @@ class GbstatsSequential(_GbstatsMethod):
             alpha=ctx.alpha,
             sequential_tuning_parameter=self.tuning(ctx),
         )
-        return SequentialTwoSidedTTest(stat_a, stat_b, cfg).compute_result()
+        return _compute(SequentialTwoSidedTTest, stat_a, stat_b, cfg)
 
     def _engine_decision(self, res: Any, ctx: EvalContext) -> int:
-        if res.error_message is None and res.p_value < ctx.alpha:
+        if res.error_message is None and res.p_value is not None and res.p_value < ctx.alpha:
             return int(np.sign(res.expected))
         return 0
 
@@ -216,10 +244,10 @@ class GbstatsTTest(_GbstatsMethod):
         from gbstats.frequentist.tests import FrequentistConfig, TwoSidedTTest
 
         cfg = FrequentistConfig(difference_type="relative", alpha=ctx.alpha)
-        return TwoSidedTTest(stat_a, stat_b, cfg).compute_result()
+        return _compute(TwoSidedTTest, stat_a, stat_b, cfg)
 
     def _engine_decision(self, res: Any, ctx: EvalContext) -> int:
-        if res.error_message is None and res.p_value < ctx.alpha:
+        if res.error_message is None and res.p_value is not None and res.p_value < ctx.alpha:
             return int(np.sign(res.expected))
         return 0
 
@@ -256,7 +284,7 @@ class GbstatsBayes(_GbstatsMethod):
         from gbstats.bayesian.tests import EffectBayesianABTest, EffectBayesianConfig
 
         cfg = EffectBayesianConfig(difference_type="relative", alpha=ctx.alpha)
-        return EffectBayesianABTest(stat_a, stat_b, cfg).compute_result()
+        return _compute(EffectBayesianABTest, stat_a, stat_b, cfg)
 
     def _engine_decision(self, res: Any, ctx: EvalContext) -> int:  # noqa: ARG002
         if res.error_message is not None:

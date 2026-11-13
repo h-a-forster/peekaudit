@@ -129,3 +129,23 @@ def test_sequential_tuning_changes_width() -> None:
     c = GbstatsSequential(relative=True, tuned=True).evaluate(st, _ctx(n_max=50_000))
     assert a.lower[0, 0] == b.lower[0, 0] and c.lower[0, 0] != a.lower[0, 0]
     assert get_method("gbstats.seq.rel.tuned").name == "gbstats.seq.rel.tuned"
+
+
+def test_engine_call_accepts_growthbook_main_api() -> None:
+    """GrowthBook main takes ``([(a, b)], config)`` and returns camelCase fields."""
+    from types import SimpleNamespace
+
+    from peekaudit.methods.gbstats_adapter import _compute
+
+    class MainStyleTest:
+        def __init__(self, stats, config):  # type: ignore[no-untyped-def]
+            self.pairs = stats
+
+        def compute_result(self):  # type: ignore[no-untyped-def]
+            return SimpleNamespace(
+                errorMessage=None, ci=[-1.0, 2.0], expected=0.5, pValue=0.01, chanceToWin=0.9
+            )
+
+    res = _compute(MainStyleTest, "a", "b", None)
+    assert (res.error_message, res.p_value, res.chance_to_win) == (None, 0.01, 0.9)
+    assert res.ci == [-1.0, 2.0] and res.expected == 0.5
