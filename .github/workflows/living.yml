@@ -4,11 +4,20 @@ name: Living audit
 # GrowthBook main at the commit pinned in peekaudit.living (scripts/living.py). Opens an
 # issue, or comments on the open one, only when a verdict differs from
 # docs/results/living/baseline.json. A target that cannot be installed or run fails the job.
+# A manual run opens or comments on the issue only when asked to (input `notify`); its
+# summary is on the run page either way.
+# GitHub disables this schedule after 60 days without a commit to the repository; re-enable
+# it from the Actions tab.
 
 on:
   schedule:
     - cron: "17 4 * * 1"  # Mondays 04:17 UTC
   workflow_dispatch:
+    inputs:
+      notify:
+        description: "Open or comment on the issue when a verdict changed"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -39,6 +48,10 @@ jobs:
           uv run --no-sync python scripts/living.py --out living-out
           echo "exit=$?" >> "$GITHUB_OUTPUT"
 
+      - name: Show the summary on the run page
+        if: always()
+        run: cat living-out/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -53,7 +66,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Open or comment on an issue when a verdict changed
-        if: steps.battery.outputs.exit == '1'
+        if: steps.battery.outputs.exit == '1' && (github.event_name == 'schedule' || inputs.notify)
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-

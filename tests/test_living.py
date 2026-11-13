@@ -89,6 +89,10 @@ def test_scrub_removes_machine_paths() -> None:
     home = str(Path.home())
     out = living.scrub({"a": [f"{sys.prefix}/x.py", f"{home}\\y"]})
     assert home not in json.dumps(out) and sys.prefix not in json.dumps(out)
+    # an error message is scrubbed before it is cut, so the cut never strands part of a path
+    exc = ImportError(f"cannot import name 'X' ({sys.prefix}/lib/site-packages/m.py)")
+    cut = len("cannot import name 'X' (") + len(sys.prefix) // 2
+    assert living._text(exc, cut) == "cannot import name 'X' (<env>/lib/site-packages/m.py)"[:cut]
 
 
 def test_living_job_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -112,7 +116,7 @@ def test_living_job_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
         (out / "run.json").write_text(json.dumps({"targets": ["tea-tasting"], "pins": []}))
         result = {
             "target": "tea-tasting",
-            "environment": {"tea-tasting": "2.1.0"},
+            "environment": {"tea-tasting": "2.1.0", "platform": "linux"},
             "verdicts": {"coverage/prop_pooled": verdict, "fpr/welch_t": "ok"},
             "details": {"coverage/prop_pooled": "covers 0.951"},
         }
@@ -139,6 +143,7 @@ def test_living_job_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     summary = (out / "summary.md").read_text("utf-8")
     assert "`coverage/prop_pooled`: violates -> ok" in summary
     assert "| tea-tasting | 2.0.0 | 2.1.0 | 2 | 0 | 1 |" in summary
+    assert "- **tea-tasting**: platform - -> linux, tea-tasting 2.0.0 -> 2.1.0" in summary
     assert script.main(["notify", str(out), "--repo", "o/r", "--run-url", "U"]) == 0
     assert "Run and artifact: U" in (out / "issue.md").read_text("utf-8")
     assert script.main(["notify", str(out), "--repo", "o/r"]) == 0

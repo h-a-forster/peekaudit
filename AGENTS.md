@@ -111,9 +111,11 @@ as wheels), spotify-confidence, tea-tasting, expectation. Every verdict comes fr
 engine calls: mirror-vs-engine agreement on random inputs, engine-backed FPR cells (Holm
 within the method), and the 2026-11-09 checks for tea-tasting and expectation. About 45 min;
 output in `tmp/living/<date>/`. Exit 0: no verdict changed; 1: one changed; 2: a target could
-not be installed or run. Seeds are fixed, so a verdict changes only when an engine's
-behaviour does. `.github/workflows/living.yml` runs it weekly and opens (or comments on) one
-issue on exit 1. Check a change against the study, then regenerate the baseline with
+not be installed or run. Seeds are fixed, but numpy, scipy, pandas and the platform move
+too: the summary's "Environment changes" says which, so check them before blaming the
+engine. `.github/workflows/living.yml` runs it weekly and opens (or comments on) one issue on
+exit 1; a manual run does so only with the `notify` input. GitHub disables the schedule after
+60 days without a commit: re-enable it in the Actions tab. Check a change against the study, then regenerate the baseline with
 `--update-baseline` (`--pin NAME==VERSION` rebuilds it for the audited versions). Bumping
 `GROWTHBOOK_COMMIT` or changing the battery needs a new baseline in the same commit.
 

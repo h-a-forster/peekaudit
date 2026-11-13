@@ -16,8 +16,11 @@ Every number is a real engine call; no mirror is trusted:
 * tea-tasting and expectation rows: the 2026-11-09 study's checks
   (``docs/results/newlib-2026-11-09/``) at fixed replicate counts, Holm within the target.
 
-Seeds are fixed, so a release always gives the same verdicts; a change means the engine's
-behaviour changed (or the battery did, and the baseline is regenerated in the same commit).
+Seeds are fixed, so the same environment always gives the same verdicts. The engine is not
+the only thing that moves: numpy, scipy and pandas also resolve to their newest releases,
+and the platform can differ from the baseline's, so the summary lists every environment
+entry that changed next to the verdicts. A battery change regenerates the baseline in the
+same commit.
 """
 
 from __future__ import annotations
@@ -93,6 +96,7 @@ def environment(target: Target) -> dict[str, str | None]:
     except importlib.metadata.PackageNotFoundError:
         pass
     out["python"] = platform.python_version()
+    out["platform"] = sys.platform
     return out
 
 
@@ -104,6 +108,13 @@ def scrub(obj: Any) -> Any:
         for form in {path, path.replace("\\", "/")}:
             text = text.replace(json.dumps(form)[1:-1], label)
     return json.loads(text)
+
+
+def _text(exc: BaseException, limit: int) -> str:
+    """``exc``'s message, scrubbed before it is cut to ``limit`` characters: a cut never
+    splits a path the scrub would then miss, and the kept text does not depend on how long
+    this machine's paths are."""
+    return str(scrub(str(exc)))[:limit]
 
 
 # --- engine-backed FPR battery ------------------------------------------------------------
@@ -216,7 +227,7 @@ def _tea_scalar(name: str, metric: Any, binary: bool, errors: list[str]) -> Scal
         try:
             r = metric.analyze_aggregates(aggs(na, sa, qa), aggs(nb, sb, qb))
         except Exception as exc:  # noqa: BLE001 - counted and reported, never hidden
-            errors.append(f"{type(exc).__name__}: {str(exc)[:80]}")
+            errors.append(f"{type(exc).__name__}: {_text(exc, 80)}")
             return None
         if not np.isfinite(r.pvalue):
             return None
@@ -305,7 +316,7 @@ def _exp_rows() -> dict[str, Any]:
     try:
         from expectation.seqtest import SequentialTesting  # noqa: F401 - the README's import
     except ImportError as exc:
-        rows["readme_import"] = {"verdict": "fails", "detail": str(exc)[:200]}
+        rows["readme_import"] = {"verdict": "fails", "detail": _text(exc, 200)}
     from expectation.seqtest.sequential_e_testing import SequentialTesting as ST
 
     stat: list[tuple[str, int, int, float]] = []
@@ -322,7 +333,7 @@ def _exp_rows() -> dict[str, Any]:
                         hit = True
                         break
             except Exception as exc:  # noqa: BLE001 - counted and reported
-                msg = f"{type(exc).__name__}: {str(exc)[:60]}"
+                msg = f"{type(exc).__name__}: {_text(exc, 60)}"
                 errors[msg] = errors.get(msg, 0) + 1
                 continue
             ran += 1
@@ -409,7 +420,7 @@ def battery(target: str, work: str | Path) -> dict[str, Any]:
             rows = {
                 f"{name}/error": {
                     "verdict": "ERROR",
-                    "detail": f"{type(exc).__name__}: {str(exc)[:300]}",
+                    "detail": f"{type(exc).__name__}: {_text(exc, 300)}",
                 }
             }
         rec = {"section": name, "rows": rows, "secs": round(time.time() - t1, 1)}
@@ -501,6 +512,20 @@ def summary_markdown(
             f"| {target} | {old} | {_label(r['environment'], dist)} | {len(r['verdicts'])} | "
             f"{bad} | {n_changed} |"
         )
+    env_lines = []
+    for target in sorted(results):
+        old_env = base_targets.get(target, {}).get("environment", {})
+        new_env = results[target].get("environment", {})
+        diff = [
+            f"{k} {old_env.get(k, '-')} -> {new_env.get(k, '-')}"
+            for k in sorted(set(old_env) | set(new_env))
+            if old_env.get(k) != new_env.get(k)
+        ]
+        if diff:
+            env_lines.append(f"- **{target}**: {', '.join(diff)}")
+    if env_lines:
+        lines += ["", "## Environment changes", "", "Any of these can move a verdict.", ""]
+        lines += env_lines
     if changes:
         lines += ["", "## Changed verdicts", ""]
         for c in changes:
