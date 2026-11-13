@@ -55,6 +55,8 @@ conformance check.
 | `src/peekaudit/compare.py` | cross-study cell-by-cell check (nesting-aware Fisher + Holm) | done |
 | `src/peekaudit/report.py` | tables, Holm families, gates, detection limit, findings, limitations, figures | done |
 | `src/peekaudit/conformance.py` | batteries, `check_conformance`, `assert_conforms` | done |
+| `src/peekaudit/living.py` | living-audit battery per engine (real engine calls), verdicts, baseline comparison | done |
+| `scripts/living.py` | living audit: fresh venv per engine, newest release, compare, issue | done |
 | `scripts/reference_values.py` | recomputes the pinned oracle values and MC power table | done |
 | `tests/` | unit tests; `@pytest.mark.slow` Monte Carlo tests run with `--runslow` | ongoing |
 | `docs/DESIGN.md` | spec: formulas, validation, study design, milestones | done |
@@ -96,6 +98,24 @@ Completeness is one rule everywhere (`runner.unit_complete`: same config hash). 
 hash does not cover the code: after a code change that affects results, rerun with
 `--force` (or a fresh `--out`); `run`/`status` warn about units from other code and the
 report lists every git SHA found.
+
+## Living audit
+
+```sh
+uv run python scripts/living.py            # newest releases vs docs/results/living/baseline.json
+```
+
+One fresh wheels-only venv per target: gbstats (PyPI), gbstats-main (GrowthBook main at
+`living.GROWTHBOOK_COMMIT`, built from source without dependencies, then its dependencies
+as wheels), spotify-confidence, tea-tasting, expectation. Every verdict comes from real
+engine calls: mirror-vs-engine agreement on random inputs, engine-backed FPR cells (Holm
+within the method), and the 2026-11-09 checks for tea-tasting and expectation. About 45 min;
+output in `tmp/living/<date>/`. Exit 0: no verdict changed; 1: one changed; 2: a target could
+not be installed or run. Seeds are fixed, so a verdict changes only when an engine's
+behaviour does. `.github/workflows/living.yml` runs it weekly and opens (or comments on) one
+issue on exit 1. Check a change against the study, then regenerate the baseline with
+`--update-baseline` (`--pin NAME==VERSION` rebuilds it for the audited versions). Bumping
+`GROWTHBOOK_COMMIT` or changing the battery needs a new baseline in the same commit.
 
 ## Key facts already established (with evidence)
 

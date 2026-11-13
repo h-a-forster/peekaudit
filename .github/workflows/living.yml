@@ -1,0 +1,68 @@
+name: Living audit
+
+# Weekly: the quick battery against the newest release of every audited engine, plus
+# GrowthBook main at the commit pinned in peekaudit.living (scripts/living.py). Opens an
+# issue, or comments on the open one, only when a verdict differs from
+# docs/results/living/baseline.json. A target that cannot be installed or run fails the job.
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"  # Mondays 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  living:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install the harness
+        run: uv sync --locked --no-dev
+
+      - name: Run the battery against the newest releases
+        id: battery
+        run: |
+          set +e
+          uv run --no-sync python scripts/living.py --out living-out
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: living-${{ github.run_id }}
+          path: |
+            living-out/summary.md
+            living-out/changes.json
+            living-out/progress.log
+            living-out/results/
+            living-out/work/*/sections.jsonl
+          if-no-files-found: warn
+
+      - name: Open or comment on an issue when a verdict changed
+        if: steps.battery.outputs.exit == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          uv run --no-sync python scripts/living.py notify living-out
+          --repo "${{ github.repository }}"
+          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Fail when a target could not run
+        if: steps.battery.outputs.exit != '0' && steps.battery.outputs.exit != '1'
+        run: |
+          echo "living.py exited ${{ steps.battery.outputs.exit }}; see summary.md in the artifact"
+          exit 1

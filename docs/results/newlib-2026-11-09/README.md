@@ -75,6 +75,11 @@ O'Brien-Fleming and Pocock bounds; K = 2, 5, 10 at z = 1.96 give 0.0831, 0.1417,
 
 ## Reproducing
 
+A fixed-size subset of these checks (tea-tasting A/A FPR and the `Proportion` interval;
+expectation's mean and proportion tests and the README import) runs weekly against each new
+release in the living audit (`peekaudit.living`, `scripts/living.py`, AGENTS.md). The scripts
+below are kept as they were run.
+
 ```sh
 sh docs/results/newlib-2026-11-09/scripts/mkvenv.sh tea-tasting 3.12 tea-tasting==2.0.0
 tmp/newlib/tea-tasting/venv/Scripts/python -I docs/results/newlib-2026-11-09/scripts/pk_tea.py
