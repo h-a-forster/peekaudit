@@ -1,6 +1,6 @@
 # ZTest reports a significant difference when a group has one unit of binary data
 
-**Status:** draft, not filed. Target: spotify-confidence issue tracker. Kind: robustness /
+**Status:** not filed (dropped on 2026-11-12 as a degenerate input close to #118). Target: spotify-confidence issue tracker. Kind: robustness /
 documentation request, not a computational error. **Last re-checked:** 2026-10-30 with
 spotify-confidence 4.1.0, still the latest PyPI release and identical to the repository's main
 branch (last commit is the 4.1.0 release, 0f12dd39af): all four rows below are reproduced exactly

@@ -1,6 +1,6 @@
 # SequentialTwoSidedTTest: false-positive rate above alpha for relative effects with few events
 
-**Status:** draft, not filed. Target: GrowthBook repository (gbstats). **Last re-checked:**
+**Status:** filed as [growthbook#7649](https://github.com/growthbook/growthbook/issues/7649) on 2026-11-07; text as written before filing. Target: GrowthBook repository (gbstats). **Last re-checked:**
 2026-10-30 with gbstats 0.8.0 (still the latest PyPI release) and with GrowthBook main at
 commit 830555b9c1: both give the 1,000-replicate figures below exactly (see Environment).
 

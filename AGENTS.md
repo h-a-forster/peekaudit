@@ -69,9 +69,8 @@ uv run ruff check .
 uv run ruff format --check .
 ```
 
-CI (`.github/workflows/ci.yml`) runs on `pull_request` and `workflow_dispatch` only:
-ubuntu py3.11, ubuntu py3.13, windows py3.13, plus a lint job. It has not run yet: the
-repository has had no pull request or dispatch.
+CI (`.github/workflows/ci.yml`) runs on pushes to `main`, pull requests and manual
+dispatch: ubuntu py3.11, ubuntu py3.13, windows py3.13, plus a lint job.
 
 ## How to run the study
 
@@ -203,7 +202,8 @@ report lists every git SHA found.
   (still the latest PyPI releases; spotify main equals 4.1.0) and GrowthBook main
   830555b9c1: all still apply, results unchanged. Hygiene scan of tracked files and history:
   clean.
-- **Open work** lives in `backlog.md` (gitignored). The README install pins `v0.1.1`.
+- **Open work** lives in `backlog.md` (gitignored). The README installs from `main`, not `v0.1.1`: the tag lacks 2f2dd79
+  (mirrors on AVX-512 NumPy 1.26), so pin a tag only once one includes it.
 - **Deferred: variance reduction (CUPED).** Doing it robustly needs a pre-period covariate in
   `simulate.py` (per-arm sums of x, x^2 and xy, chunk-deterministic), a gbstats
   `RegressionAdjustedStatistic` sequential adapter with its own mirror or direct engine

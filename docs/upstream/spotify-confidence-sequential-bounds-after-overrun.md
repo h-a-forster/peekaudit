@@ -1,6 +1,6 @@
 # Sequential ZTest: bounds of earlier looks change when later looks exceed the planned sample size
 
-**Status:** draft, not filed. Target: spotify-confidence issue tracker. **Last re-checked:**
+**Status:** posted as a [comment on spotify/confidence#110](https://github.com/spotify/confidence/issues/110#issuecomment-6833819535) on 2026-11-12; text as written before filing. Target: spotify-confidence issue tracker. **Last re-checked:**
 2026-10-30 with spotify-confidence 4.1.0, still the latest PyPI release and identical to the repository's main
 branch (last commit is the 4.1.0 release, 0f12dd39af): the table below is reproduced exactly
 (`scripts/spotify_overrun_repro.py`).

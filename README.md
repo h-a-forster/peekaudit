@@ -106,8 +106,8 @@ particular that gbstats 0.8.0 on PyPI is older than the code GrowthBook runs tod
 You need [uv](https://docs.astral.sh/uv/). peekaudit is distributed from git only.
 
 ```sh
-# as a tool, from git, pinned to the latest release; --python 3.11 is required
-uv tool install --python 3.11 "peekaudit[engines] @ git+https://github.com/h-a-forster/peekaudit@v0.1.1"
+# as a tool, from git main, which has fixes made after v0.1.1; --python 3.11 is required
+uv tool install --python 3.11 "peekaudit[engines] @ git+https://github.com/h-a-forster/peekaudit"
 
 # or for development (canonical study environment: Python 3.11)
 git clone https://github.com/h-a-forster/peekaudit

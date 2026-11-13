@@ -1,6 +1,6 @@
 # gbstats on PyPI (0.8.0) differs from the code on main, which also reports 0.8.0
 
-**Status:** draft, not filed. Target: GrowthBook repository. **Last re-checked:** 2026-10-30
+**Status:** filed as [growthbook#7642](https://github.com/growthbook/growthbook/issues/7642) on 2026-11-07; text as written before filing. Target: GrowthBook repository. **Last re-checked:** 2026-10-30
 against GrowthBook main at commit 830555b9c1 and gbstats 0.8.0, still the latest release on
 PyPI: still applies (details under "Re-check" below). Re-check again before filing.
 
