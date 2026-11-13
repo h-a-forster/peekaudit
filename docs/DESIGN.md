@@ -497,7 +497,7 @@ Cut or deferred, with reasons:
   on Python 3.13 with numpy 2.x and pandas 2.x. Installing the `engines` extra with pip on
   3.12+ fails without the same overrides; the README documents this.
 - CI runs ubuntu 3.11 (as shipped), ubuntu 3.13 and windows 3.13 (overridden), plus lint.
-  Triggers: `pull_request` and `workflow_dispatch` only.
+  Triggers: pushes to `main`, `pull_request` and `workflow_dispatch`.
 
 ## 12. Milestones (each ends with `uv run pytest`, `uv run ruff check .` and `uv run ruff format --check .` green, a CHANGELOG entry and an AGENTS.md status update)
 

@@ -9,7 +9,7 @@ folder holds the scripts and the results they were drawn from.
 | Library | Version | Claim | Result |
 |---|---|---|---|
 | tea-tasting | 2.0.0 | Fixed-horizon tests, no sequential claim | The default `Proportion` confidence interval misses its level at any sample size when the rates differ: 0.89 (absolute) and 0.78 (relative) at a nominal 0.95 |
-| expectation | 0.6.1 | Anytime-valid sequential tests and confidence sequences | 9 of 51 cells violate after Holm, all already reported in the maintainer's #154 (default mean test 25% FPR at 5%). New: the proportion test raises while all observations are 0 or all 1, and the README's first import fails |
+| expectation | 0.6.1 | Anytime-valid sequential tests and confidence sequences | 9 of 51 cells violate after Holm, all already reported in the maintainer's #154 (default mean test 27.3% [23.8, 30.9] FPR at a nominal 5%). New: the proportion test raises while all observations are 0 or all 1, and the README's first import fails |
 | gsdesign | 0.1.5 | Group sequential densities (numerical core) | Clean: per-look crossing probabilities within 8e-7 of `peekaudit.gst` for K up to 50 |
 
 ## tea-tasting 2.0.0
